@@ -9,8 +9,9 @@
 
 int	main(int ac, char **av)
 {
+	(void)ac;
+	(void)av;
 	sockaddr_in	srv, client;
-	int			client_list[10];
 
 	int	fd_srv = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_srv < 0)
@@ -18,6 +19,8 @@ int	main(int ac, char **av)
 		std::cerr << "Error creating socket\n";
 		return (-1);
 	}
+	int opt = 1;
+	setsockopt(fd_srv, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
 	// Non blocking server
 	int flags = fcntl(fd_srv, F_GETFL);
@@ -25,7 +28,7 @@ int	main(int ac, char **av)
 	// memset(&srv, 0, sizeof(srv));
 	srv.sin_family = AF_INET;
 	srv.sin_addr.s_addr = INADDR_ANY;
-	srv.sin_port = htons(7070);
+	srv.sin_port = htons(8080);
 	
 	if (bind(fd_srv, (sockaddr*)&srv, sizeof(srv)) < 0)
 	{
@@ -84,9 +87,9 @@ int	main(int ac, char **av)
 				// const char* msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, world!";
 				// send(srv_events_list[i].data.fd, msg, strlen(msg), 0);
 				std::cout << full_data << std::endl;
-				const char *msg = get_response("index.html");
+				const char *msg = get_response("index.html").c_str();
 				send(srv_events_list[i].data.fd, msg, strlen(msg), 0);
-				epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, nullptr);
+				epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
 				close(srv_events_list[i].data.fd);
 				// close(fd_srv);
 			}
