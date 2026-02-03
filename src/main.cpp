@@ -11,7 +11,7 @@ int	main(int ac, char **av)
 {
 	(void)ac;
 	(void)av;
-	sockaddr_in	srv, client;
+	sockaddr_in	srv, client;// Port, type d'ad IP + ad IP
 
 	int	fd_srv = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_srv < 0)
@@ -43,7 +43,7 @@ int	main(int ac, char **av)
 	}
 	else
 		std::cout << "This socket has the ability to queue for incoming connexions (TCP)\n";
-	std::cout << "Server listening on port 7070...\n";
+	std::cout << "Server listening on port 8080...\n";
 
 	// epoll
 	int	epoll_fd = epoll_create1(EPOLL_CLOEXEC);// means CLOSE on exec
@@ -72,12 +72,12 @@ int	main(int ac, char **av)
 				fcntl(client_fd, F_SETFL, flags | O_NONBLOCK);
 				// Add client_fd to epoll (important!)
 				epoll_event ev;
-				ev.events = EPOLLIN;      // listen for read events
+				ev.events = EPOLLIN | EPOLLOUT;      // listen for read events
 				ev.data.fd = client_fd;
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0)
 					std::cerr << "Failed to add client fd to epoll\n";
 			}
-			else
+			else// client
 			{
 				char buffer[4000];
 				ssize_t bytes = 0;
@@ -89,8 +89,12 @@ int	main(int ac, char **av)
 				std::cout << full_data << std::endl;
 				const char *msg = get_response("index.html").c_str();
 				send(srv_events_list[i].data.fd, msg, strlen(msg), 0);
-				epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
-				close(srv_events_list[i].data.fd);
+				if (srv_events_list[i].events == EPOLLOUT)
+				{
+					std::cout << "debug\n";
+					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
+					close(srv_events_list[i].data.fd);
+				}
 				// close(fd_srv);
 			}
 		}
