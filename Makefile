@@ -5,6 +5,7 @@ CFLAGS = -Wall -Werror -Wextra -g3 -std=c++98
 NAME = serv
 
 SRC =	src/get_response.cpp \
+		src/webserv.cpp \
 		src/main.cpp
 		
 GREEN = \033[32m
