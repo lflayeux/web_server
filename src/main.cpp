@@ -1,16 +1,39 @@
-#include <sys/socket.h>
-#include <sys/epoll.h>
-#include <netdb.h>
-#include <string.h>
-#include <iostream>
-#include <fcntl.h>
-#include <unistd.h>
 #include "../include/webserv.hpp"
+
+
+int handle_request(const std::string &request)
+{
+	/* PARSING */
+	http_request	our_request;
+
+	std::string line;
+	std::istringstream iss(request);
+
+	while (std::getline(iss, line))
+	{
+		std::cout << "+=+=+=+=: "<< line << std::endl;
+		if (line.find("GET") != std::string::npos)
+			our_request.set_method(GET);
+		else if (line.find("POST") != std::string::npos)
+			our_request.set_method(POST);
+		else if (line.find("DELETE") != std::string::npos)
+			our_request.set_method(DELETE);
+		else if (line.find("8080") != std::string::npos)
+			our_request.set_port(8080);
+	}
+
+	std::cout << "Our request is :" << our_request << std::endl;
+	/* TTT */
+
+	return 0;
+}
+
 
 int	main(int ac, char **av)
 {
 	(void)ac;
 	(void)av;
+	std::map<int, std::string>	pending_requests;
 	sockaddr_in	srv, client;// Port, type d'ad IP + ad IP
 
 	int	fd_srv = socket(AF_INET, SOCK_STREAM, 0);
@@ -72,31 +95,63 @@ int	main(int ac, char **av)
 				fcntl(client_fd, F_SETFL, flags | O_NONBLOCK);
 				// Add client_fd to epoll (important!)
 				epoll_event ev;
-				ev.events = EPOLLIN | EPOLLOUT;      // listen for read events
+				ev.events = EPOLLIN;      // listen for read events
 				ev.data.fd = client_fd;
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0)
 					std::cerr << "Failed to add client fd to epoll\n";
 			}
-			else// client
+			else	// client
 			{
-				char buffer[4000];
-				ssize_t bytes = 0;
-				std::string full_data = "";
-				while ((bytes = recv(srv_events_list[i].data.fd, buffer, sizeof(buffer) - 1, 0)) > 0)
-					full_data.append(buffer);
-				// const char* msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, world!";
-				// send(srv_events_list[i].data.fd, msg, strlen(msg), 0);
-				std::cout << full_data << std::endl;
-				const char *msg = get_response("index.html").c_str();
-				send(srv_events_list[i].data.fd, msg, strlen(msg), 0);
-				if (srv_events_list[i].events == EPOLLOUT)
+				// ETAPE 1 = le client evoie sa requete
+				if (srv_events_list[i].events & EPOLLIN)	// le client envoie sa requete
 				{
-					std::cout << "debug\n";
+					char		buffer[4096];
+					ssize_t		bytes = 0;
+					std::string	full_data = "";
+					while ((bytes = recv(srv_events_list[i].data.fd, buffer, sizeof(buffer) - 1, 0)) > 0)
+					{
+						buffer[bytes] = '\0';
+						full_data.append(buffer);
+					}
+					if (full_data.find("\r\n\r\n") != std::string::npos)
+					{
+						std::cout << "Requête reçue :\n" << full_data << std::endl;
+						// Il faudra stocker la requete quelque part
+						// imaginons un container "requests" type map<int, std::string>
+						pending_requests[srv_events_list[i].data.fd] = full_data;
+
+						// maintenant qu'on a la requete, on veut écrire la réponse
+						// on passe donc en mode EPOLLOUT
+						epoll_event	ev;
+						ev.events = EPOLLOUT;
+						ev.data.fd = srv_events_list[i].data.fd;
+						epoll_ctl(epoll_fd, EPOLL_CTL_MOD, srv_events_list[i].data.fd, &ev);
+					}
+				}
+
+				// ETAPE 2 = on peut maintenant envoyer la reponse
+				else if (srv_events_list[i].events & EPOLLOUT)
+				{
+					/* On a une string en arg, on veut la parser et la traiter */
+					if (handle_request(pending_requests[srv_events_list[i].data.fd]) != 0)
+						std::cerr << "Error with handling request\n";// + envoyer code erreur
+					std::cout << "Envoi de la réponse..." << std::endl;
+					// Générer la réponse (on devrait la stocker aussi dans un container)
+					std::string reponse = get_response("index.html");
+					send(srv_events_list[i].data.fd, reponse.c_str(), reponse.size(), 0);
+					// On a fini avec ce client
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
 					close(srv_events_list[i].data.fd);
+					pending_requests.erase(srv_events_list[i].data.fd);
+					std::cout << "Client déconnecté" << std::endl;
 				}
-				// close(fd_srv);
+				else if (srv_events_list[i].events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
+				{
+					std::cerr << "\n\nQUIT ERROR\n\n";
+				}
 			}
 		}
 	}
 }
+
+/* a faire : Parser la requete, faire différentes pages en html, */
