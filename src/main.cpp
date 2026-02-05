@@ -19,9 +19,13 @@ int handle_request(const std::string &request, http_request &our_request)
 			our_request.set_method(DELETE);
 		else if (line.find("8080") != std::string::npos)
 			our_request.set_port(8080);
+		else if (line.find("Content-Length:") != std::string::npos)
+			our_request.set_content_length(line);
+		else if (line.find("Connection: keep-alive") != std::string::npos)
+			our_request.set_keep_alive(true);
 	}
 
-	std::cout << "Our request is :" << our_request << std::endl;
+	std::cout << "Our request is : " << our_request << std::endl;
 	/* TTT */
 
 	return 0;

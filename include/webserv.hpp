@@ -30,14 +30,20 @@ class http_request
 		~http_request(){};
 		int		get_method() const;
 		int		get_port() const;
+		int		get_content_length() const;
+		bool	get_keep_alive() const;
 		std::string get_path_to_send() const;
 		void	set_method(int method);
 		void 	set_method_Get(std::string line);
 		void	set_port(int port);
+		void	set_content_length(const std::string &line);
+		void	set_keep_alive(bool status);
 	private:
+		bool			keep_alive_;
 		int				method_;
 		int				port_;
-		std::string		path_to_send;
+		int				content_length_;
+		std::string		path_to_send_;
 };
 
 std::ostream &operator<<(std::ostream &flux, http_request const &obj);
