@@ -1,6 +1,17 @@
 #include <fstream>
 # include "../include/webserv.hpp"
 
+int content_length_calculus()
+{
+
+}
+
+std::string get_header()
+{
+	std::string msg;
+	msg += line + "\r\n";
+}
+
 
 std::string get_response(const char *file_path)
 {
