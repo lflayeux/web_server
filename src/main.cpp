@@ -1,10 +1,9 @@
 #include "../include/webserv.hpp"
 
 
-int handle_request(const std::string &request)
+int handle_request(const std::string &request, http_request &our_request)
 {
 	/* PARSING */
-	http_request	our_request;
 
 	std::string line;
 	std::istringstream iss(request);
@@ -13,7 +12,7 @@ int handle_request(const std::string &request)
 	{
 		std::cout << "+=+=+=+=: "<< line << std::endl;
 		if (line.find("GET") != std::string::npos)
-			our_request.set_method(GET);
+			our_request.set_method_Get(line);
 		else if (line.find("POST") != std::string::npos)
 			our_request.set_method(POST);
 		else if (line.find("DELETE") != std::string::npos)
@@ -33,6 +32,8 @@ int	main(int ac, char **av)
 {
 	(void)ac;
 	(void)av;
+	http_request	our_request;
+
 	std::map<int, std::string>	pending_requests;
 	sockaddr_in	srv, client;// Port, type d'ad IP + ad IP
 
@@ -79,8 +80,9 @@ int	main(int ac, char **av)
 
 	while (1)
 	{
-		int nb_events = epoll_wait(epoll_fd, srv_events_list, 64, -1);
-		std::cout << "NB OF EVENT" << nb_events << std::endl;
+		int nb_events = 0;
+		nb_events = epoll_wait(epoll_fd, srv_events_list, 64, -1);
+		std::cout << BCYAN "NB OF EVENT" << nb_events <<  RESET << std::endl;
 		for (int i = 0; i < nb_events; i++)
 		{
 
@@ -90,7 +92,7 @@ int	main(int ac, char **av)
 				socklen_t client_len = sizeof(client);
 
 				int client_fd = accept(fd_srv, (sockaddr*)&client, &client_len);
-				std::cout << "New client connected: fd=" << client_fd << "\n";
+				std::cout << BMAGENTA "New client connected: fd=" << client_fd << RESET << "\n";
 				int flags = fcntl(client_fd, F_GETFL);
 				fcntl(client_fd, F_SETFL, flags | O_NONBLOCK);
 				// Add client_fd to epoll (important!)
@@ -133,17 +135,18 @@ int	main(int ac, char **av)
 				else if (srv_events_list[i].events & EPOLLOUT)
 				{
 					/* On a une string en arg, on veut la parser et la traiter */
-					if (handle_request(pending_requests[srv_events_list[i].data.fd]) != 0)
+					if (handle_request(pending_requests[srv_events_list[i].data.fd], our_request) != 0)
 						std::cerr << "Error with handling request\n";// + envoyer code erreur
-					std::cout << "Envoi de la réponse..." << std::endl;
+					std::cout << BMAGENTA "Envoi de la réponse..." << RESET << std::endl;
 					// Générer la réponse (on devrait la stocker aussi dans un container)
-					std::string reponse = get_response("index.html");
+					std::string reponse = get_response(our_request.get_path_to_send().c_str());
+					// std::string reponse = get_response("index.html");
 					send(srv_events_list[i].data.fd, reponse.c_str(), reponse.size(), 0);
 					// On a fini avec ce client
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
 					close(srv_events_list[i].data.fd);
 					pending_requests.erase(srv_events_list[i].data.fd);
-					std::cout << "Client déconnecté" << std::endl;
+					std::cout << BRED "Client déconnecté" << RESET << std::endl;
 				}
 				else if (srv_events_list[i].events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
 				{
