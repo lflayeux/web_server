@@ -12,7 +12,7 @@ int handle_request(const std::string &request, http_request &our_request)
 	{
 		std::cout << "+=+=+=+=: "<< line << std::endl;
 		if (line.find("GET") != std::string::npos)
-			our_request.set_method_Get(line);
+			our_request.set_method(GET);
 		else if (line.find("POST") != std::string::npos)
 			our_request.set_method(POST);
 		else if (line.find("DELETE") != std::string::npos)

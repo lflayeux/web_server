@@ -4,7 +4,9 @@ CFLAGS = -Wall -Werror -Wextra -g3 -std=c++98
 
 NAME = serv
 
-SRC =	src/get_response.cpp \
+SRC =	src/mine/get_response.cpp \
+		src/mine/get_response_code.cpp \
+		src/mine/test.cpp \
 		src/webserv.cpp \
 		src/main.cpp
 		
