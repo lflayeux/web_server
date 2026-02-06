@@ -18,6 +18,7 @@ std::string http_request::get_path_to_send() const
 void http_request::set_method(int method)
 {
 	this->method_ = method;
+	this->path_to_send = "/";
 }
 
 void http_request::set_method_Get(std::string line)
