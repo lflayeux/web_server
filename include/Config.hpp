@@ -4,6 +4,11 @@
 # include <vector>
 # include <string>
 # include <map>
+# include <iostream>
+# include <fstream>
+# include "colors.hpp"
+# include <sstream>
+# include <istream>
 
 struct Location
 {
@@ -34,9 +39,11 @@ class Config
 		std::vector<Server> server; // Liste des sites (dans le .conf chaque server{} definit un site) 1 minimum sinon error
 		
 	public:
-		Config(/* args */);
-		~Config();
+		Config(/* args */){};
+		~Config(){};
 		
+
+		int load(char *file_path);
 		
 
 };
