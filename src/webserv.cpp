@@ -30,6 +30,11 @@ std::string http_request::get_version() const
 	return (this->version_);
 }
 
+std::string http_request::get_body() const
+{
+	return (this->body_);
+}
+
 void http_request::set_method(int method)
 {
 	this->method_ = method;
@@ -106,10 +111,18 @@ void	http_request::add_header(const std::string &header, const std::string &valu
     this->headers_.insert(std::make_pair(header, value));
 }
 
-void	http_request::add_body(const std::string &body)
+void    http_request::add_body(const std::string &body)
 {
+    const std::string prefix = "data=";
+
+    if (body.compare(0, prefix.size(), prefix) == 0)
+    {
+        this->body_ = body.substr(prefix.size());
+        return;
+    }
     this->body_ = body;
 }
+
 
 std::ostream &operator<<(std::ostream &flux, http_request const &obj)
 {
@@ -119,7 +132,6 @@ std::ostream &operator<<(std::ostream &flux, http_request const &obj)
 		keep_alive = "keep-alive";
 	else
 		keep_alive = "keep-dead";
-
 
 	flux << "METHOD: " << obj.get_method() << " | port: " << obj.get_port()
 	<< " | content-length: " << obj.get_content_length() << " | Connection: "

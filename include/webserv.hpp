@@ -35,6 +35,7 @@ class http_request
 		int			get_content_length() const;
 		bool		get_keep_alive() const;
 		std::string get_path_to_send() const;
+		std::string get_body() const;
 		void		set_method(int method);
 		void 		set_path(const std::string &path);
 		void 		set_version(const std::string &version);
