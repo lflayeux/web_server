@@ -1,8 +1,9 @@
 #include "../include/webserv.hpp"
+#include "../include/Response.hpp"
 
 
 
-int handle_request(const std::string &request, http_request &our_request)
+int handle_request(const std::string &request, Response &our_request)
 {
 	std::string line;
 	std::istringstream iss(request);
@@ -87,7 +88,7 @@ int	main(int ac, char **av)
 {
 	(void)ac;
 	(void)av;
-	http_request	our_request;
+	Response	our_request;
 
 	std::map<int, std::string>	pending_requests;
 	sockaddr_in	srv, client;// Port, type d'ad IP + ad IP
@@ -194,7 +195,7 @@ int	main(int ac, char **av)
 						std::cerr << "Error with handling request\n";// + envoyer code erreur
 					std::cout << BMAGENTA "Envoi de la réponse..." << RESET << std::endl;
 					// Générer la réponse (on devrait la stocker aussi dans un container)
-					std::string reponse = get_response(our_request.get_path_to_send().c_str());
+					std::string reponse = our_request.get_response();
 					// std::string reponse = get_response("index.html");
 					send(srv_events_list[i].data.fd, reponse.c_str(), reponse.size(), 0);
 					// On a fini avec ce client
