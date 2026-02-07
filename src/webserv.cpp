@@ -10,45 +10,45 @@ int    http_request::get_port() const
     return (this->port_);
 }
 
-int    http_request::get_content_length() const
+int	http_request::get_content_length() const
 {
-    return (this->content_length_);
+	return (this->content_length_);
 }
 
-bool    http_request::get_keep_alive() const
+bool	http_request::get_keep_alive() const
 {
-    return (this->keep_alive_);
+	return (this->keep_alive_);
 }
 
 std::string http_request::get_path_to_send() const
 {
-    return (this->path_to_send_);
+	return (this->path_to_send_);
 }
 
 std::string http_request::get_version() const
 {
-    return (this->version_);
+	return (this->version_);
 }
 
 void http_request::set_method(int method)
 {
-    this->method_ = method;
-    this->path_to_send_ = "/";
+	this->method_ = method;
+	this->path_to_send_ = "/";
 }
 
-void    http_request::set_version(const std::string &version)
+void	http_request::set_version(const std::string &version)
 {
-    this->version_ = version;
+	this->version_ = version;
 }
 
-void    http_request::set_path(const std::string &path)
+void	http_request::set_path(const std::string &path)
 {
-    this->path_to_send_ = path;
+	this->path_to_send_ = path;
 }
 
-void    http_request::set_keep_alive(bool status)
+void	http_request::set_keep_alive(bool status)
 {
-    this->keep_alive_ = status;
+	this->keep_alive_ = status;
 }
 
 void http_request::set_content_length(const std::string &line)
@@ -95,28 +95,35 @@ void http_request::set_content_length(const std::string &line)
               << this->content_length_ << std::endl;
 }
 
+
 void http_request::set_port(int port)
 {
     this->port_ = port;
 }
 
-// void    http_request::add_header(const std::string &header, const std::string &value)
-// {
-//     this->headers.insert(std::make_pair(header, value));
-// }
+void	http_request::add_header(const std::string &header, const std::string &value)
+{
+    this->headers_.insert(std::make_pair(header, value));
+}
+
+void	http_request::add_body(const std::string &body)
+{
+    this->body_ = body;
+}
 
 std::ostream &operator<<(std::ostream &flux, http_request const &obj)
 {
-    std::string    keep_alive;
-    
-    if (obj.get_keep_alive())
-        keep_alive = "keep-alive";
-    else
-        keep_alive = "keep-dead";
+	std::string	keep_alive;
+	
+	if (obj.get_keep_alive())
+		keep_alive = "keep-alive";
+	else
+		keep_alive = "keep-dead";
 
 
-    flux << "METHOD: " << obj.get_method() << " | port: " << obj.get_port()
-    << " | content-length: " << obj.get_content_length() << " | Connection: "
-    << keep_alive << " | version: " << obj.get_version() << std::endl;
-    return (flux);
+	flux << "METHOD: " << obj.get_method() << " | port: " << obj.get_port()
+	<< " | content-length: " << obj.get_content_length() << " | Connection: "
+	<< keep_alive << " | version: " << obj.get_version() <<
+	" | path: " << obj.get_path_to_send() << std::endl;
+	return (flux);
 }
