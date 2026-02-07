@@ -1,6 +1,7 @@
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
+# include "Config.hpp"
 # include "colors.hpp"
 # include <sys/socket.h>
 # include <sys/epoll.h>
@@ -16,7 +17,6 @@
 # include <iomanip>
 # include <cstdlib>
 
-std::string get_response(const char *file_path);
 
 enum    method
 {
@@ -25,7 +25,7 @@ enum    method
     DELETE,
 };
 
-class http_request
+class http_request : public Config
 {
 	public:
 		http_request(){};
@@ -36,6 +36,7 @@ class http_request
 		int			get_content_length() const;
 		bool		get_keep_alive() const;
 		std::string get_path_to_send() const;
+        std::string get_body() const;
 		void		set_method(int method);
 		void 		set_path(const std::string &path);
 		void 		set_version(const std::string &version);
@@ -45,7 +46,7 @@ class http_request
 		void		add_header(const std::string &header, const std::string &value);
 		void		add_body(const std::string &body);
 	private:
-		int			id_server_;
+		// int			id_server_;
 		bool		keep_alive_;
 		int			method_;
 		std::string	version_;
@@ -58,7 +59,6 @@ class http_request
 };
 
 std::ostream &operator<<(std::ostream &flux, http_request const &obj);
-std::string create_header(http_request &request);
 std::pair<int, std::string > get_response_code_message(http_request &request);
 
 http_request *create_test();

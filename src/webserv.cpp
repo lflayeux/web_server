@@ -30,6 +30,11 @@ std::string http_request::get_version() const
 	return (this->version_);
 }
 
+std::string http_request::get_body() const
+{
+	return (this->body_);
+}
+
 void http_request::set_method(int method)
 {
 	this->method_ = method;
@@ -124,6 +129,6 @@ std::ostream &operator<<(std::ostream &flux, http_request const &obj)
 	flux << "METHOD: " << obj.get_method() << " | port: " << obj.get_port()
 	<< " | content-length: " << obj.get_content_length() << " | Connection: "
 	<< keep_alive << " | version: " << obj.get_version() <<
-	" | path: " << obj.get_path_to_send() << std::endl;
+	" | path: " << obj.get_path_to_send()<< " | body: " << obj.get_body() << std::endl;
 	return (flux);
 }
