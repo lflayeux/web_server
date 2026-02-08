@@ -20,16 +20,19 @@ void removeComments(std::string& content) {
     }
 }
 
-void sanitize(std::string &s) {
+void sanitize(std::string &s)
+{
     std::string result;
-    for (size_t i = 0; i < s.length(); ++i) {
-        if (s[i] == '{' || s[i] == '}' || s[i] == ';') {
+    for (size_t i = 0; i < s.length(); ++i)
+	{
+        if (s[i] == '{' || s[i] == '}' || s[i] == ';')
+		{
             result += " ";
             result += s[i];
             result += " ";
-        } else {
-            result += s[i];
         }
+		else
+            result += s[i];
     }
     s = result;
 }
@@ -207,6 +210,47 @@ bool	parseUploadLocation(std::vector<std::string> tokens, size_t &i, Location &l
 		return (false);
 	return (true);
 }
+bool	parseClientMaxBodySize(std::vector<std::string> tokens, size_t &i, Location &location)
+{
+	i++;
+	std::string input = tokens[i].c_str();
+	char end = input[input.size() - 1];
+	long nb = 0;
+	long multiplier = 1;
+	if (isalpha(end))
+	{
+		end = toupper(end);
+		if (end == 'K')
+			multiplier = 1024;
+		if (end == 'M')
+			multiplier = 1024 * 1024;
+		if (end == 'G')
+			multiplier = 1024 * 1024 * 1024;
+		input.erase(input.size() - 1);
+		for (size_t j = 0; j < input.size(); ++j)
+		{
+    		if (!isdigit(input[j]))
+        		return false;
+		}
+		nb = atoi(input.c_str());
+		if (nb < 1 || nb > LONG_MAX)
+			return (false);
+	}
+	else
+	{
+		nb = atoi(tokens[i].c_str());
+		if (nb < 1 || nb > LONG_MAX)
+			return (false);
+	}
+	nb *= multiplier;
+	if (nb < 1 || nb > LONG_MAX)
+		return (false);
+	location.Max_body_size = nb;
+	i++;
+	if (i >= tokens.size() || tokens[i] != ";")
+		return (false);
+	return (true);
+}
 void	setDefaultLocation(Location &location)
 {
 	location.path = "none";
@@ -266,11 +310,13 @@ bool	Config::parseLocation(std::vector<std::string> tokens, size_t &start, Serve
 			if (!parseUploadLocation(tokens, i, location))
 				return (false);
 		}
-		else if (tokens[i] == "}")
+		else if (tokens[i] == "client_max_body_size")
 		{
-			i++;
-			break;
+			if (!parseClientMaxBodySize(tokens, i, location))
+				return (false);
 		}
+		else if (tokens[i] == "}")
+			break;
 		else
 			return (false);
 		i++;
@@ -283,7 +329,106 @@ bool	Config::parseLocation(std::vector<std::string> tokens, size_t &start, Serve
 void	setDefaultServer(Server &server)
 {
 	server.root = "none";
-	server.Max_body_size = "10000";
+	server.Max_body_size = 10000;
+}
+
+bool	parseListen(std::vector<std::string> tokens, size_t &i, Server &server)
+{
+	i++;
+	if (!(i < tokens.size()))
+		return (false);
+	long new_port = atoi(tokens[i].c_str());
+	if (new_port < 1 || new_port > 65535)
+		return (false);
+	server.port.push_back(new_port);
+	i++;
+	if (i >= tokens.size() || tokens[i] != ";")
+		return (false);
+	return (true);
+}
+
+bool	parseClientMaxBodySize(std::vector<std::string> tokens, size_t &i, Server &server)
+{
+	i++;
+	std::string input = tokens[i].c_str();
+	char end = input[input.size() - 1];
+	long nb = 0;
+	long multiplier = 1;
+	if (isalpha(end))
+	{
+		end = toupper(end);
+		if (end == 'K')
+			multiplier = 1024;
+		if (end == 'M')
+			multiplier = 1024 * 1024;
+		if (end == 'G')
+			multiplier = 1024 * 1024 * 1024;
+		input.erase(input.size() - 1);
+		for (size_t j = 0; j < input.size(); ++j)
+		{
+    		if (!isdigit(input[j]))
+        		return false;
+		}
+		nb = atoi(input.c_str());
+		if (nb < 1 || nb > LONG_MAX)
+			return (false);
+	}
+	else
+	{
+		nb = atoi(tokens[i].c_str());
+		if (nb < 1 || nb > LONG_MAX)
+			return (false);
+	}
+	if (nb < 1 || nb > LONG_MAX)
+			return (false);
+	nb *= multiplier;
+	server.Max_body_size = nb;
+	i++;
+	if (i >= tokens.size() || tokens[i] != ";")
+		return (false);
+	return (true);
+}
+
+bool	parseRoot(std::vector<std::string> tokens, size_t &i, Server &server)
+{
+	i++;
+	if (i < tokens.size())
+	{
+		server.root = tokens[i];
+		i++;
+	}
+	else
+		return (false);
+	if (i >= tokens.size() || tokens[i] != ";")
+		return (false);
+	return (true);
+}
+bool	parseErrorPage(std::vector<std::string> tokens, size_t &i, Server &server)
+{
+    i++;
+    std::vector<std::string> args;
+    while (i < tokens.size() && tokens[i] != ";")
+	{
+        args.push_back(tokens[i]);
+        i++;
+    }
+    if (args.size() < 2 || (i >= tokens.size() || tokens[i] != ";"))
+        return (false);
+    std::string path = args.back();
+    args.pop_back();
+    for (size_t j = 0; j < args.size(); ++j)
+	{
+        for (size_t k = 0; k < args[j].size(); k++)
+		{
+            if (!isdigit(args[j][k]))
+				return false;
+        }
+        int code = atoi(args[j].c_str());
+        if (code < 300 || code > 599)
+			return false;
+        server.error_pages[code] = path;
+    }
+    return true;
 }
 
 bool	Config::parseServer(std::vector<std::string> tokens, size_t &i)
@@ -297,6 +442,27 @@ bool	Config::parseServer(std::vector<std::string> tokens, size_t &i)
 			i++;
 			if (!parseLocation(tokens, i, server))
 				return (false);
+
+		}
+		else if (tokens[i] == "root")
+		{
+			if (!parseRoot(tokens, i, server))
+				return (false);
+		}
+		else if (tokens[i] == "listen")
+		{
+			if (!parseListen(tokens, i, server))
+				return (false);
+		}
+		else if (tokens[i] == "client_max_body_size")
+		{
+			if (!parseClientMaxBodySize(tokens, i, server))
+				return (false);
+		}
+		else if (tokens[i] == "error_page")
+		{
+			if (!parseErrorPage(tokens, i, server))
+				return (false);
 		}
 		else if (tokens[i] == "}")
 		{
@@ -304,7 +470,8 @@ bool	Config::parseServer(std::vector<std::string> tokens, size_t &i)
 			break;
 		}
 		else
-			i++;
+			return (false);
+		i++;
 	}
 	server_.push_back(server);
 	return (true);
@@ -352,13 +519,28 @@ int Config::load(char *file_path)
 	}
 	if (!parseMain(tokens, 0))
 	{
+		std::cerr << BRED "Error: .conf not valid" RESET << std::endl;
 		return (-1);
 	}
-	// PRINT SERVERS
+	// ======================
+	// = PRINT SERVERS TEST =
+	// ======================
 	for (size_t i = 0; i < server_.size(); i++)
 	{
 
 		std::cout << BMAGENTA "SERVER "  << i + 1 <<  RESET << std::endl;
+		for (size_t n = 0; n < server_[i].port.size(); n++)
+		{
+			std::cout << "PORT ==> " << server_[i].port[n] << std::endl;
+		}
+		std::cout << "MAX_BODY_SIZE ==> " << server_[i].Max_body_size << std::endl;
+		std::cout << "ROOT ==> " << server_[i].root << std::endl;
+
+		std::cout << BMAGENTA "ERROR PAGES:" RESET << std::endl;
+		for (std::map<int, std::string>::iterator it = server_[i].error_pages.begin(); it != server_[i].error_pages.end(); ++it) 
+		{
+		    std::cout << "  Code [" << it->first << "] => Path: " << it->second << std::endl;
+		}
 		for (size_t j = 0; j < server_[i].location.size(); j++)
 		{
 			std::cout << BCYAN "LOCATIONS "  << j + 1 <<  RESET << std::endl;
@@ -370,6 +552,7 @@ int Config::load(char *file_path)
 			std::cout << "REDIRECTIONS ==> " << server_[i].location[j].redirections << std::endl;
 			std::cout << "UPLOAD_ALLOWED ==> " << server_[i].location[j].upload_allowed << std::endl;
 			std::cout << "UPLOAD_LOCATIONS ==> " << server_[i].location[j].upload_location << std::endl;
+			std::cout << "MAX_BODY_SIZE ==> " << server_[i].location[j].Max_body_size << std::endl;
 		}
 	}
 	return 0;
