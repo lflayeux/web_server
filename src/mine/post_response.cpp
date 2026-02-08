@@ -1,9 +1,10 @@
 #include "../../include/webserv.hpp"
 #include "../../include/Response.hpp"
 
+// CHECK AND CONSIDER PRG TECHNIC TO AVOID REFRESHING AND RESENDING DATA
 int Response::response_code_POST()
 {
-    return (200);
+    return (201);
 }
 
 void Response::response_POST()
