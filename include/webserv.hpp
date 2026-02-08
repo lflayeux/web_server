@@ -16,6 +16,7 @@
 # include <iostream>
 # include <iomanip>
 # include <cstdlib>
+# include <fstream>
 
 
 enum    method
