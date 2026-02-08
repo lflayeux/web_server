@@ -9,6 +9,7 @@ SRC =	src/mine/get_response.cpp \
 		src/mine/response.cpp \
 		src/mine/post_response.cpp \
 		src/mine/delete_response.cpp \
+		src/mine/html_path.cpp \
 		src/webserv.cpp \
 		src/main.cpp
 		
