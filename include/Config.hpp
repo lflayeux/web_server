@@ -1,14 +1,15 @@
 #ifndef CONFIG_HPP
 # define CONFIG_HPP
 
+# include "colors.hpp"
 # include <vector>
 # include <string>
 # include <map>
 # include <iostream>
 # include <fstream>
-# include "colors.hpp"
 # include <sstream>
 # include <istream>
+# include <cstdlib>
 
 struct Location
 {
@@ -36,7 +37,7 @@ struct Server
 class Config
 {
 	private:
-		std::vector<Server> server; // Liste des sites (dans le .conf chaque server{} definit un site) 1 minimum sinon error
+		std::vector<Server> server_; // Liste des sites (dans le .conf chaque server{} definit un site) 1 minimum sinon error
 		
 	public:
 		Config(/* args */){};
@@ -44,6 +45,10 @@ class Config
 		
 
 		int load(char *file_path);
+		bool	parseMain(std::vector<std::string> tokens, size_t i);
+		bool	parseServer(std::vector<std::string> tokens, size_t &start);
+		bool	parseLocation(std::vector<std::string> tokens, size_t &start, Server &server);
+
 		
 
 };
