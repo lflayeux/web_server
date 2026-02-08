@@ -195,7 +195,7 @@ int	main(int ac, char **av)
 						std::cerr << "Error with handling request\n";// + envoyer code erreur
 					std::cout << BMAGENTA "Envoi de la réponse..." << RESET << std::endl;
 					// Générer la réponse (on devrait la stocker aussi dans un container)
-					std::string reponse = our_request.get_response();
+					std::string reponse = our_request.create_response();
 					// std::string reponse = get_response("index.html");
 					send(srv_events_list[i].data.fd, reponse.c_str(), reponse.size(), 0);
 					// On a fini avec ce client
