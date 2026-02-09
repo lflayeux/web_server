@@ -1,4 +1,5 @@
 #include "../include/webserv.hpp"
+#include "../include/Config.hpp"
 
 
 
@@ -85,8 +86,14 @@ int handle_request(const std::string &request, http_request &our_request)
 
 int	main(int ac, char **av)
 {
-	(void)ac;
-	(void)av;
+	if (ac != 2)
+	{
+		std::cerr << BRED "Use: ./serv [ficher .conf]" RESET << std::endl;
+		return (1);
+	}
+	Config config;
+	if (config.load(av[1]) != 0)
+		return (1);
 	http_request	our_request;
 
 	std::map<int, std::string>	pending_requests;
