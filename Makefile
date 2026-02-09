@@ -11,7 +11,8 @@ SRC =	src/mine/get_response.cpp \
 		src/mine/delete_response.cpp \
 		src/mine/html_path.cpp \
 		src/webserv.cpp \
-		src/main.cpp
+		src/main.cpp \
+		src/Config.cpp
 		
 GREEN = \033[32m
 YELLOW = \033[33m
