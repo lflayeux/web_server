@@ -1,8 +1,8 @@
-#include "../include/webserv.hpp"
+#include "../include/Request.hpp"
 
 
 
-int handle_request(const std::string &request, http_request &our_request)
+int handle_request(const std::string &request, Request &our_request)
 {
 	std::string line;
 	std::istringstream iss(request);
@@ -87,7 +87,7 @@ int	main(int ac, char **av)
 {
 	(void)ac;
 	(void)av;
-	http_request	our_request;
+	Request	our_request;
 
 	std::map<int, std::string>	pending_requests;
 	sockaddr_in	srv, client;// Port, type d'ad IP + ad IP

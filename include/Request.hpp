@@ -1,5 +1,5 @@
-#ifndef WEBSERV_HPP
-#define WEBSERV_HPP
+#ifndef REQUEST_HPP
+#define REQUEST_HPP
 
 # include "colors.hpp"
 # include <sys/socket.h>
@@ -24,11 +24,19 @@ enum	method
 	DELETE,
 };
 
-class http_request
+/* TO TEST before merge */
+class	Config
+{
+	protected:
+		int	nb_serv_;
+};
+
+class Request : public Config
 {
 	public:
-		http_request(){};
-		~http_request(){};
+		Request(){};
+		~Request(){};
+		int			get_id_server() const;
 		int			get_method() const;
 		std::string	get_version() const;
 		int			get_port() const;
@@ -36,6 +44,7 @@ class http_request
 		bool		get_keep_alive() const;
 		std::string get_path_to_send() const;
 		std::string get_body() const;
+		void		set_id_serv_();
 		void		set_method(int method);
 		void 		set_path(const std::string &path);
 		void 		set_version(const std::string &version);
@@ -57,6 +66,6 @@ class http_request
 		std::map<std::string, std::string>	headers_;
 };
 
-std::ostream &operator<<(std::ostream &flux, http_request const &obj);
+std::ostream &operator<<(std::ostream &flux, Request const &obj);
 
 #endif
