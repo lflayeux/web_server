@@ -11,6 +11,7 @@
 # include <istream>
 # include <cstdlib>
 # include <climits>
+# include <cstring>
 
 struct Location
 {
@@ -20,7 +21,7 @@ struct Location
 	std::vector<std::string>	method; // liste des methodes autorises 
 	std::vector<std::string>	index; // fichier a chercher (ex: index.html parsing.html) si pas de match default = index.html et check autoindex
 	bool						autoindex; //  si on et pas de .html trouver lsiting du genre ls
-	int 						error_code; // code d'erreur par defaut 200
+	int 						conf_error_code; // code d'erreur par defaut 200
 	std::string					redirections; // lien de redirections si return code dans les 300
 	bool						upload_allowed; // si off pas d'upload (off par defaut)
 	std::string					upload_location; // si upload on obligatoire
@@ -46,10 +47,28 @@ class Config
 		virtual ~Config(){};
 		
 
-		int load(char *file_path);
+		int		load(char *file_path);
 		bool	parseMain(std::vector<std::string> tokens, size_t i);
 		bool	parseServer(std::vector<std::string> tokens, size_t &start);
 		bool	parseLocation(std::vector<std::string> tokens, size_t &start, Server &server);
+
+		// 
+		int							getIdServer(int port);
+		
+		int							getBestPath(std::string path, int server_id);
+		std::string					getRoot(std::string path, int server_id);
+		long						getMaxBodySize(std::string path, int server_id);
+		bool						isMethodAllowed(std::string path, int server_id, std::string method);
+		std::vector<std::string>	getIndex(std::string path, int server_id);
+		bool						getAutoIndex(std::string path, int server_id);
+		int							getConfErrorCode(std::string path, int server_id);
+		std::string					getRedirections(std::string path, int server_id);
+		bool						getUploadAllowed(std::string path, int server_id);
+		std::string					getUploadLocation(std::string path, int server_id);
+		
+		std::string					getErrorPage(int error, int server_id);
+
+	// [] getMaxBodySize
 };
 
 // ETRE HYPER RIGOUREUX AVEC LE PARSING DES QUE TOKENS MANQUANT ERROR

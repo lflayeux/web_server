@@ -1,5 +1,137 @@
 #include "../include/Config.hpp"
 
+// GETTER/SETTER
+
+
+/** **/
+int Config::getIdServer(int port)
+{
+	for (size_t i = 0; i < server_.size(); i++)
+	{
+		for (size_t j = 0; j < server_[i].port.size(); j++)
+		{
+			if (port == server_[i].port[j])
+				return (i);
+		}
+	}
+	return (-1);
+}
+
+int		Config::getBestPath(std::string path, int server_id)
+{
+	int id = -1;
+    size_t longest_match = 0;
+
+    for (size_t i = 0; i < server_[server_id].location.size(); i++)
+    {
+        const std::string& loc_path = server_[server_id].location[i].path;
+		if (path.find(loc_path) == 0)
+        {
+            if (loc_path.size() > longest_match)
+            {
+                longest_match = loc_path.size();
+                id = i;
+            }
+        }
+    }
+    return (id);
+}
+
+std::string Config::getRoot(std::string path, int server_id)
+{
+	std::string best_root = server_[server_id].root;
+	int i = getBestPath(path, server_id); 
+	if (i != -1)
+		best_root = server_[server_id].location[i].root;
+    return (best_root);
+}
+
+std::string Config::getErrorPage(int error, int server_id)
+{
+	std::map<int, std::string>::iterator it = server_[server_id].error_pages.find(error);
+	if (it != server_[server_id].error_pages.end())
+		return (it->second);
+	return ("default");
+}
+bool	Config::getUploadAllowed(std::string path, int server_id)
+{
+	int i = getBestPath(path, server_id);
+	if (i == -1)
+		return (false);
+	return (server_[server_id].location[i].upload_allowed);
+}
+
+std::string	Config::getUploadLocation(std::string path, int server_id)
+{
+	int i = getBestPath(path, server_id);
+	if (i != -1)
+	{
+		if (server_[server_id].location[i].upload_location != "default")
+			return (server_[server_id].location[i].upload_location);
+	}
+	return ("./data/uploads");
+}
+
+bool	Config::getAutoIndex(std::string path, int server_id)
+{
+	int i = getBestPath(path, server_id);
+	if (i == -1)
+		return (false);
+	return (server_[server_id].location[i].autoindex);
+}
+
+std::vector<std::string> Config::getIndex(std::string path, int server_id)
+{
+	std::vector<std::string> empty;
+	int i = getBestPath(path, server_id);
+	if (i == -1)
+		return (empty);
+	return (server_[server_id].location[i].index);
+}
+bool Config::isMethodAllowed(std::string path, int server_id, std::string method)
+{
+	std::vector<std::string> empty;
+	int i = getBestPath(path, server_id);
+	if (i != -1)
+	{
+		for (size_t n = 0; n < server_[server_id].location[i].method.size(); n++)
+		{
+
+			if (server_[server_id].location[i].method[n] == method)
+				return (true);
+		}
+		return (false);
+	}
+	return (true);
+}
+
+int	Config::getConfErrorCode(std::string path, int server_id)
+{
+	int i = getBestPath(path, server_id);
+	if (i != -1)
+		return (server_[server_id].location[i].conf_error_code);
+	return (200);
+}
+std::string	Config::getRedirections(std::string path, int server_id)
+{
+	int i = getBestPath(path, server_id);
+	return (server_[server_id].location[i].redirections);
+}
+
+long	Config::getMaxBodySize(std::string path, int server_id)
+{
+	int i = getBestPath(path, server_id);
+	if (i != -1)
+	{
+		if (server_[server_id].location[i].Max_body_size != -1)
+			return (server_[server_id].location[i].Max_body_size);
+	}
+	return (server_[server_id].Max_body_size);
+}
+// =============================================================
+// ===================== PARSING AND LOAD OBJECT ===============
+// =============================================================
+
 void removeComments(std::string& content) {
     size_t pos = content.find('#');
     
@@ -154,7 +286,7 @@ bool	parseRedirections(std::vector<std::string> tokens, size_t &i, Location &loc
 		if (atoi(tokens[i].c_str()))// on a un code
 		{
 			if (atoi(tokens[i].c_str()) >= 200 && atoi(tokens[i].c_str()) <= 599)
-				location.error_code = atoi(tokens[i].c_str());
+				location.conf_error_code = atoi(tokens[i].c_str());
 			else
 				return (false);
 		}
@@ -167,7 +299,7 @@ bool	parseRedirections(std::vector<std::string> tokens, size_t &i, Location &loc
 		if (atoi(tokens[i].c_str()))// on a un code en premier arg
 		{
 			if (atoi(tokens[i].c_str()) >= 200 && atoi(tokens[i].c_str()) <= 599)
-				location.error_code = atoi(tokens[i].c_str());
+				location.conf_error_code = atoi(tokens[i].c_str());
 			else
 				return (false);
 		}
@@ -253,13 +385,23 @@ bool	parseClientMaxBodySize(std::vector<std::string> tokens, size_t &i, Location
 }
 void	setDefaultLocation(Location &location)
 {
+
+	// std::string				path; // le path de l'url matchant la requete (si pas error)
+	// std::string				root; // le dossier physique ou chercher les fichier (si pas prendre celui du serveur)
+	// long						Max_body_size; // le body size max de la requete client (format : 1024 (octets), 12k ou K (Ko), Mo et Go egalement)
+	// bool						autoindex; //  si on et pas de .html trouver lsiting du genre ls
+	// int 						conf_error_code; // code d'erreur par defaut 200
+	// std::string				redirections; // lien de redirections si return code dans les 300
+	// bool						upload_allowed; // si off pas d'upload (off par defaut)
+	// std::string				upload_location; 	
 	location.path = "none";
 	location.root = "none";
+	location.Max_body_size = -1;
 	location.autoindex = false;
-	location.error_code = 200;
+	location.conf_error_code = 200;
 	location.redirections = "none";
 	location.upload_allowed = false;
-	location.upload_location = "none";
+	location.upload_location = "default";
 }
 bool	Config::parseLocation(std::vector<std::string> tokens, size_t &start, Server &server)
 {
@@ -525,36 +667,58 @@ int Config::load(char *file_path)
 	// ======================
 	// = PRINT SERVERS TEST =
 	// ======================
-	for (size_t i = 0; i < server_.size(); i++)
-	{
+	// for (size_t i = 0; i < server_.size(); i++)
+	// {
 
-		std::cout << BMAGENTA "SERVER "  << i + 1 <<  RESET << std::endl;
-		for (size_t n = 0; n < server_[i].port.size(); n++)
-		{
-			std::cout << "PORT ==> " << server_[i].port[n] << std::endl;
-		}
-		std::cout << "MAX_BODY_SIZE ==> " << server_[i].Max_body_size << std::endl;
-		std::cout << "ROOT ==> " << server_[i].root << std::endl;
+	// 	std::cout << BMAGENTA "SERVER "  << i + 1 <<  RESET << std::endl;
+	// 	for (size_t n = 0; n < server_[i].port.size(); n++)
+	// 	{
+	// 		std::cout << "PORT ==> " << server_[i].port[n] << std::endl;
+	// 	}
+	// 	std::cout << "MAX_BODY_SIZE ==> " << server_[i].Max_body_size << std::endl;
+	// 	std::cout << "ROOT ==> " << server_[i].root << std::endl;
 
-		std::cout << BMAGENTA "ERROR PAGES:" RESET << std::endl;
-		for (std::map<int, std::string>::iterator it = server_[i].error_pages.begin(); it != server_[i].error_pages.end(); ++it) 
-		{
-		    std::cout << "  Code [" << it->first << "] => Path: " << it->second << std::endl;
-		}
-		for (size_t j = 0; j < server_[i].location.size(); j++)
-		{
-			std::cout << BCYAN "LOCATIONS "  << j + 1 <<  RESET << std::endl;
+	// 	std::cout << BMAGENTA "ERROR PAGES:" RESET << std::endl;
+	// 	for (std::map<int, std::string>::iterator it = server_[i].error_pages.begin(); it != server_[i].error_pages.end(); ++it) 
+	// 	{
+	// 	    std::cout << "  Code [" << it->first << "] => Path: " << it->second << std::endl;
+	// 	}
+	// 	for (size_t j = 0; j < server_[i].location.size(); j++)
+	// 	{
+	// 		std::cout << BCYAN "LOCATIONS "  << j + 1 <<  RESET << std::endl;
 
-			std::cout << "PATH ==> " << server_[i].location[j].path << std::endl;
-			std::cout << "ROOT ==> " << server_[i].location[j].root << std::endl;
-			std::cout << "AUTOINDEX ==> " << server_[i].location[j].autoindex << std::endl;
-			std::cout << "ERROR_CODE ==> " << server_[i].location[j].error_code << std::endl;
-			std::cout << "REDIRECTIONS ==> " << server_[i].location[j].redirections << std::endl;
-			std::cout << "UPLOAD_ALLOWED ==> " << server_[i].location[j].upload_allowed << std::endl;
-			std::cout << "UPLOAD_LOCATIONS ==> " << server_[i].location[j].upload_location << std::endl;
-			std::cout << "MAX_BODY_SIZE ==> " << server_[i].location[j].Max_body_size << std::endl;
-		}
-	}
+	// 		std::cout << "PATH ==> " << server_[i].location[j].path << std::endl;
+	// 		std::cout << "ROOT ==> " << server_[i].location[j].root << std::endl;
+	// 		std::cout << "AUTOINDEX ==> " << server_[i].location[j].autoindex << std::endl;
+	// 		std::cout << "ERROR_CODE ==> " << server_[i].location[j].conf_error_code << std::endl;
+	// 		std::cout << "REDIRECTIONS ==> " << server_[i].location[j].redirections << std::endl;
+	// 		std::cout << "UPLOAD_ALLOWED ==> " << server_[i].location[j].upload_allowed << std::endl;
+	// 		std::cout << "UPLOAD_LOCATIONS ==> " << server_[i].location[j].upload_location << std::endl;
+	// 		std::cout << "MAX_BODY_SIZE ==> " << server_[i].location[j].Max_body_size << std::endl;
+	// 	}
+	// }
+
+	// std::cout << std::endl;
+	// std::cout << std::endl;
+	// std::cout << "Best root: " << getRoot("/size", 0) << std::endl;
+	// std::cout << "Server Id: " << getIdServer(3030) << std::endl;
+	// std::cout << "MaxBODYSIZE: " << getMaxBodySize("/size", 0) << std::endl;
+	// std::cout << "Server Method: " << isMethodAllowed("/", 0, "GET") << std::endl;
+	// std::cout << "Server Index: ";
+	// std::vector<std::string> indexs = getIndex("/uploads", 0);
+	// for (size_t n = 0; n < indexs.size(); n++)
+	// {
+	// 	std::cout << " " << indexs[n];
+	// }
+	// std::cout << std::endl;
+	// std::cout << "Server AutoIndex: " << getAutoIndex("/", 0) << std::endl;
+	// std::cout << "Server Conf_error_code: " << getConfErrorCode("/uploads/lolololo", 0) << std::endl;
+
+
+	// std::cout << "Server Upload Allowed: " << getUploadAllowed("/size", 0) << std::endl;
+	// std::cout << "Server Upload Location: " << getUploadLocation("/uploads", 0) << std::endl;
+	// std::cout << "Server Error_page: " << getErrorPage(200, 0) << std::endl;
+
 	return 0;
 }
 // PARSE_MAIN
