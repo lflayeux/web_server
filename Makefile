@@ -6,7 +6,8 @@ NAME = serv
 
 SRC =	src/get_response.cpp \
 		src/webserv.cpp \
-		src/main.cpp
+		src/main.cpp \
+		src/Config.cpp
 		
 GREEN = \033[32m
 YELLOW = \033[33m
