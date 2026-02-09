@@ -42,30 +42,38 @@ std::string Response::format_response()
 	std::ifstream index_fd(get_path_to_send().c_str());
     std::string line;
 
-	std::cout << BRED "PATH TO SEND HEHHAHAHAHAH:" << get_path_to_send() << std::endl;
 	while(std::getline(index_fd, line))
-	{
 		body += line + "\r\n";
-	}
-	std::cout << BRED "BODY LENGTH HEHHAHAHAHAH:" << body.length() << std::endl;
+
+	// if (error_code_.first > 299 && error_code_.first < 400)
+	// 	msg += "Location: " + getRedirections(get_path_to_send().sub(getRoot().length() - 1), getIdServer(get_port())) + "\r\n";
+
 	msg = create_header(body.length());
 	msg += body;
-	// std::cout << BRED "response :" << msg << std::endl;
+
     return (msg);    
 }
+
+
 
 std::string Response::create_response()
 {
     std::string response;
 
 	create_path();
+
+	// else if (is_allowed_method(std::string method))
+	// 	set_response_code_message(405);
     if(get_method() == POST)
         response_POST();
     else if(get_method() == GET)
         response_GET();
     else if(get_method() == DELETE)
-        response_DELETE();
+        response_DELETE();		
 
+	// int conf_error_code = getConfErrorCode(get_path_to_send().sub(getRoot().length() - 1), getIdServer(get_port()));
+	// if (conf_error_code != 200)
+	// 	set_response_code_message(conf_error_code);
     path_to_error();
     response = format_response();
 

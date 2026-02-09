@@ -2,6 +2,8 @@
 # define RESPONSE_HPP
 
 #include "webserv.hpp"
+#include <dirent.h>
+#include <sys/stat.h>
 
 class Response : public http_request
 {
@@ -25,9 +27,13 @@ public:
     int response_code_DELETE();
 
     std::string format_response();
+
+    // bool is_allowed_method(int method);
+
 };
 
 bool file_exist(const std::string &file_path);
+bool is_allowed_file(const std::string &file_name);
 
 
 

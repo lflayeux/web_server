@@ -3,7 +3,7 @@
 
 
 
-int handle_request(const std::string &request, Response &our_request)
+int handle_request(const std::string &request, http_request &our_request)
 {
 	std::string line;
 	std::istringstream iss(request);
