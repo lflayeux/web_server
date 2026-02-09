@@ -1,62 +1,73 @@
-#include "../include/webserv.hpp"
+#include "../include/Request.hpp"
 
-int	http_request::get_method() const
+int	Request::get_id_server() const
+{
+	return (this->id_server_);
+}
+
+int	Request::get_method() const
 {
 	return (this->method_);
 }
 
-int	http_request::get_port() const
+int	Request::get_port() const
 {
 	return (this->port_);
 }
 
-int	http_request::get_content_length() const
+int	Request::get_content_length() const
 {
 	return (this->content_length_);
 }
 
-bool	http_request::get_keep_alive() const
+bool	Request::get_keep_alive() const
 {
 	return (this->keep_alive_);
 }
 
-std::string http_request::get_path_to_send() const
+std::string Request::get_path_to_send() const
 {
 	return (this->path_to_send_);
 }
 
-std::string http_request::get_version() const
+std::string Request::get_version() const
 {
 	return (this->version_);
 }
 
-std::string http_request::get_body() const
+std::string Request::get_body() const
 {
 	return (this->body_);
 }
 
-void http_request::set_method(int method)
+void	Request::set_id_serv_()
+{
+	this->nb_serv_ = 2;
+	/* we will use value from Config class after merge */
+}
+
+void Request::set_method(int method)
 {
 	this->method_ = method;
 	this->path_to_send_ = "/";
 }
 
-void	http_request::set_version(const std::string &version)
+void	Request::set_version(const std::string &version)
 {
 	this->version_ = version;
 }
 
-void	http_request::set_path(const std::string &path)
+void	Request::set_path(const std::string &path)
 {
 	this->path_to_send_ = path;
 }
 
-void	http_request::set_keep_alive(bool status)
+void	Request::set_keep_alive(bool status)
 {
 	this->keep_alive_ = status;
 }
 
-void http_request::set_content_length(const std::string &line)
+void Request::set_content_length(const std::string &line)
 {
     size_t pos_sep = line.find(':');
     if (pos_sep == std::string::npos)
@@ -101,17 +112,17 @@ void http_request::set_content_length(const std::string &line)
 }
 
 
-void http_request::set_port(int port)
+void Request::set_port(int port)
 {
 	this->port_ = port;
 }
 
-void	http_request::add_header(const std::string &header, const std::string &value)
+void	Request::add_header(const std::string &header, const std::string &value)
 {
     this->headers_.insert(std::make_pair(header, value));
 }
 
-void    http_request::add_body(const std::string &body)
+void    Request::add_body(const std::string &body)
 {
     const std::string prefix = "data=";
 
@@ -124,7 +135,7 @@ void    http_request::add_body(const std::string &body)
 }
 
 
-std::ostream &operator<<(std::ostream &flux, http_request const &obj)
+std::ostream &operator<<(std::ostream &flux, Request const &obj)
 {
 	std::string	keep_alive;
 	
