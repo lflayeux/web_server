@@ -1,7 +1,80 @@
 #include "../include/Config.hpp"
 
-// GETTER/SETTER
+// ======================================
+// ============= CHECK .CONF ============
+// ======================================
 
+bool	Config::checkRedir()
+{
+	for (size_t i = 0; i < server_.size(); i++)
+	{
+		for (size_t j = 0; j < server_[i].location.size(); j++)
+		{
+			if (server_[i].location[j].conf_error_code > 299 && server_[i].location[j].conf_error_code < 400)
+			{
+				if (server_[i].location[j].redirections == "none")
+					return (false);
+			}
+		}
+	}
+	return (true);
+}
+
+
+bool	Config::checkUpload()
+{
+	for (size_t i = 0; i < server_.size(); i++)
+	{
+		for (size_t j = 0; j < server_[i].location.size(); j++)
+		{
+			if (server_[i].location[j].upload_allowed == true)
+			{
+				if (server_[i].location[j].upload_location == "default")
+					return (false);
+			}
+		}
+	}
+	return (true);
+}
+
+
+bool	Config::checkListen()
+{
+	for (size_t i = 0; i < server_.size(); i++)
+	{
+		if (server_[i].port.size() == 0)
+			return (false);
+	}
+	return (true);
+}
+
+
+
+bool	Config::checkConfig()
+{
+	if (!checkListen())
+	{	
+		std::cerr << BRED "Error: .conf not valid -> a listening port is needed" RESET << std::endl;
+		return (false);
+	}
+	if (!checkUpload())
+	{	
+		std::cerr << BRED "Error: .conf not valid -> an upload location is needed" RESET << std::endl;
+		return (false);
+	}
+	if (!checkRedir())
+	{	
+		std::cerr << BRED "Error: .conf not valid -> a redirection path is needed for 3xx errors" RESET << std::endl;
+		return (false);
+	}
+	return (true);
+}
+
+
+
+// ======================================
+// ============= GETTER/SETTER ==========
+// ======================================
 
 /** **/
 int Config::getIdServer(int port)
@@ -27,12 +100,20 @@ int		Config::getBestPath(std::string path, int server_id)
         const std::string& loc_path = server_[server_id].location[i].path;
 		if (path.find(loc_path) == 0)
         {
-            if (loc_path.size() > longest_match)
+            // if (loc_path.size() > longest_match)
+            // {
+            //     longest_match = loc_path.size();
+            //     id = i;
+            // }
+        	if (path.size() == loc_path.size() || loc_path[loc_path.size() - 1] == '/' || path[loc_path.size()] == '/') 
             {
-                longest_match = loc_path.size();
-                id = i;
+                if (loc_path.size() > longest_match)
+                {
+                    longest_match = loc_path.size();
+                    id = i;
+                }
             }
-        }
+		}
     }
     return (id);
 }
@@ -88,6 +169,7 @@ std::vector<std::string> Config::getIndex(std::string path, int server_id)
 		return (empty);
 	return (server_[server_id].location[i].index);
 }
+
 bool Config::isMethodAllowed(std::string path, int server_id, std::string method)
 {
 	std::vector<std::string> empty;
@@ -128,6 +210,7 @@ long	Config::getMaxBodySize(std::string path, int server_id)
 	}
 	return (server_[server_id].Max_body_size);
 }
+
 // =============================================================
 // ===================== PARSING AND LOAD OBJECT ===============
 // =============================================================
@@ -222,9 +305,15 @@ bool	parseRoot(std::vector<std::string> tokens, size_t &i, Location &location)
 		i++;
 	}
 	else
-		return (false);
+	{
+		std::cerr << BRED "Error: .conf not valid ->  missing args for keyword: location" RESET << std::endl;
+		return(false);
+	}
 	if (i >= tokens.size() || tokens[i] != ";")
-		return (false);
+	{
+		std::cerr << BRED "Error: .conf not valid -> missing ; at the end of line" RESET << std::endl;
+		return(false);
+	}
 	return (true);
 }
 
@@ -234,12 +323,18 @@ bool	parseMethod(std::vector<std::string> tokens, size_t &i, Location &location)
 	while (i < tokens.size() && tokens[i] != ";")
 	{
 		if (!(tokens[i] == "GET" || tokens[i] == "DELETE" || tokens[i] == "POST"))
+		{
+			std::cerr << BRED "Error: .conf not valid -> invalid method for keyword: allowed_method" RESET << std::endl;
 			return (false);
+		}
 		location.method.push_back(tokens[i]);
 		i++;
 	}
 	if (i >= tokens.size() || tokens[i] != ";")
+	{
+		std::cerr << BRED "Error: .conf not valid -> too many args for keyword: allowed_method" RESET << std::endl;
 		return (false);
+	}
 	return (true);
 }
 
@@ -252,7 +347,10 @@ bool	parseIndex(std::vector<std::string> tokens, size_t &i, Location &location)
 		i++;
 	}
 	if (i >= tokens.size() || tokens[i] != ";")
+	{
+		std::cerr << BRED "Error: .conf not valid -> missing args for keyword: index" RESET << std::endl;
 		return (false);
+	}
 	return (true);
 }
 
@@ -260,7 +358,10 @@ bool	parseAutoIndex(std::vector<std::string> tokens, size_t &i, Location &locati
 {
 	i++;
 	if (!(i < tokens.size()))
+	{
+		std::cerr << BRED "Error: .conf not valid -> missing args for keyword: autoindex" RESET << std::endl;
 		return (false);
+	}
 	if (tokens[i] == "on")
 	{
 		location.autoindex = true;
@@ -268,10 +369,16 @@ bool	parseAutoIndex(std::vector<std::string> tokens, size_t &i, Location &locati
 	else if (tokens[i] == "off")
 		location.autoindex = false;
 	else
+	{
+		std::cerr << BRED "Error: .conf not valid -> invalid value for keyword: autoindex" RESET << std::endl;
 		return (false);
+	}
 	i++;
 	if (i >= tokens.size() || tokens[i] != ";")
+	{
+		std::cerr << BRED "Error: .conf not valid -> too many args for keyword: autoindex" RESET << std::endl;
 		return (false);
+	}
 	return (true);
 }
 
@@ -279,8 +386,10 @@ bool	parseRedirections(std::vector<std::string> tokens, size_t &i, Location &loc
 {
 	i++;
 	if (!(i < tokens.size()))
+	{
+		std::cerr << BRED "Error: .conf not valid -> missing args for keyword: return" RESET << std::endl;
 		return (false);
-
+	}
 	if (i + 1 < tokens.size() && tokens[i + 1] == ";")// cas 1 seul arg
 	{
 		if (atoi(tokens[i].c_str()))// on a un code
@@ -288,7 +397,10 @@ bool	parseRedirections(std::vector<std::string> tokens, size_t &i, Location &loc
 			if (atoi(tokens[i].c_str()) >= 200 && atoi(tokens[i].c_str()) <= 599)
 				location.conf_error_code = atoi(tokens[i].c_str());
 			else
+			{
+				std::cerr << BRED "Error: .conf not valid -> return code invalid for keyword: return" RESET << std::endl;
 				return (false);
+			}
 		}
 		else
 			location.redirections = tokens[i];
@@ -301,15 +413,24 @@ bool	parseRedirections(std::vector<std::string> tokens, size_t &i, Location &loc
 			if (atoi(tokens[i].c_str()) >= 200 && atoi(tokens[i].c_str()) <= 599)
 				location.conf_error_code = atoi(tokens[i].c_str());
 			else
+			{
+				std::cerr << BRED "Error: .conf not valid -> return code invalid for keyword: return" RESET << std::endl;
 				return (false);
+			}
 		}
 		else
+		{
+			std::cerr << BRED "Error: .conf not valid -> invalid args for keyword: return" RESET << std::endl;
 			return (false);
+		}
 		location.redirections = tokens[i + 1];// on charge le 2e arg
 		i += 2;
 	}
 	else
+	{
+		std::cerr << BRED "Error: .conf not valid -> invalid args for keyword: return" RESET << std::endl;
 		return (false);
+	}
 	return (true);
 }
 
@@ -317,71 +438,85 @@ bool	parseUploadAllowed(std::vector<std::string> tokens, size_t &i, Location &lo
 {
 	i++;
 	if (!(i < tokens.size()))
+	{
+		std::cerr << BRED "Error: .conf not valid -> missing args for keyword: upload_allowed" RESET << std::endl;
 		return (false);
+	}
 	if (tokens[i] == "on")
 		location.upload_allowed = true;
 	else if (tokens[i] == "off")
 		location.upload_allowed = false;
 	else
+	{
+		std::cerr << BRED "Error: .conf not valid -> invalid args for keyword: upload_allowed" RESET << std::endl;
 		return (false);
+	}
 	i++;
 	if (i >= tokens.size() || tokens[i] != ";")
+	{
+		std::cerr << BRED "Error: .conf not valid -> too many args for keyword: upload_allowed" RESET << std::endl;
 		return (false);
+	}
 	return (true);
 }
 
 bool	parseUploadLocation(std::vector<std::string> tokens, size_t &i, Location &location)
 {
 	i++;
-	if (i < tokens.size())
+	if (i < tokens.size() && tokens[i] != ";")
 		location.upload_location = tokens[i];
 	else
+	{
+		std::cerr << BRED "Error: .conf not valid -> missing args for keyword: upload_location" RESET << std::endl;
 		return (false);
+	}
 	i++;
 	if (i >= tokens.size() || tokens[i] != ";")
+	{
+		std::cerr << BRED "Error: .conf not valid -> too many args for keyword: upload_location" RESET << std::endl;
 		return (false);
+	}
 	return (true);
 }
-bool	parseClientMaxBodySize(std::vector<std::string> tokens, size_t &i, Location &location)
+
+bool parseClientMaxBodySize(std::vector<std::string> tokens, size_t &i, Location &location)
 {
-	i++;
-	std::string input = tokens[i].c_str();
-	char end = input[input.size() - 1];
-	long nb = 0;
-	long multiplier = 1;
-	if (isalpha(end))
+    i++;
+    if (i >= tokens.size())
+		return (false);
+    std::string input = tokens[i];
+    if (input.empty())
+		return (false);
+    char unit = input[input.size() - 1];
+    long long multiplier = 1;
+    if (isalpha(unit)) 
 	{
-		end = toupper(end);
-		if (end == 'K')
+        unit = toupper(unit);
+        if (unit == 'K')
 			multiplier = 1024;
-		if (end == 'M')
+        else if (unit == 'M')
 			multiplier = 1024 * 1024;
-		if (end == 'G')
+        else if (unit == 'G')
 			multiplier = 1024 * 1024 * 1024;
-		input.erase(input.size() - 1);
-		for (size_t j = 0; j < input.size(); ++j)
-		{
-    		if (!isdigit(input[j]))
-        		return false;
-		}
-		nb = atoi(input.c_str());
-		if (nb < 1 || nb > LONG_MAX)
+        else
 			return (false);
-	}
-	else
+        input.erase(input.size() - 1);
+    }
+    if (input.empty())
+		return (false);
+	for (size_t j = 0; j < input.size(); ++j)
 	{
-		nb = atoi(tokens[i].c_str());
-		if (nb < 1 || nb > LONG_MAX)
+        if (!isdigit(input[j]))
 			return (false);
-	}
-	nb *= multiplier;
-	if (nb < 1 || nb > LONG_MAX)
-		return (false);
-	location.Max_body_size = nb;
-	i++;
-	if (i >= tokens.size() || tokens[i] != ";")
-		return (false);
-	return (true);
+    }
+    long long value = atol(input.c_str());
+    if (value > 0 && multiplier > 0 && value > (2147483647LL / multiplier))
+        return (false);
+    location.Max_body_size = static_cast<size_t>(value * multiplier);
+    i++;
+    if (i >= tokens.size() || tokens[i] != ";")
+        return (false);
+    return (true);
 }
 void	setDefaultLocation(Location &location)
 {
@@ -408,11 +543,17 @@ bool	Config::parseLocation(std::vector<std::string> tokens, size_t &start, Serve
 	Location	location;
 	setDefaultLocation(location);
 	if (!(start < tokens.size() && tokens[start][0] == '/'))
+	{
+		std::cerr << BRED "Error: .conf not valid -> missing path after keyword: location" RESET << std::endl;
 		return(false);
+	}
 	location.path = tokens[start];
 	start++;
 	if (!(start < tokens.size() && tokens[start] == "{"))
-		return (false);
+	{
+		std::cerr << BRED "Error: .conf not valid -> too much arg for keyword: location" RESET << std::endl;
+		return(false);
+	}
 	start++;
 	size_t i = start;
 	while (i < tokens.size())
@@ -455,7 +596,10 @@ bool	Config::parseLocation(std::vector<std::string> tokens, size_t &start, Serve
 		else if (tokens[i] == "client_max_body_size")
 		{
 			if (!parseClientMaxBodySize(tokens, i, location))
+			{
+				std::cerr << BRED "Error: .conf not valid -> client_max_body_size value invalid" RESET << std::endl;
 				return (false);
+			}
 		}
 		else if (tokens[i] == "}")
 			break;
@@ -477,72 +621,85 @@ void	setDefaultServer(Server &server)
 bool	parseListen(std::vector<std::string> tokens, size_t &i, Server &server)
 {
 	i++;
-	if (!(i < tokens.size()))
+	if (!(i < tokens.size() && tokens[i] != ";"))
+	{
+		std::cerr << BRED "Error: .conf not valid -> missing args for keyword: listen" RESET << std::endl;
 		return (false);
+	}
 	long new_port = atoi(tokens[i].c_str());
 	if (new_port < 1 || new_port > 65535)
+	{
+		std::cerr << BRED "Error: .conf not valid -> invalid port for keyword: listen" RESET << std::endl;
 		return (false);
+	}
 	server.port.push_back(new_port);
 	i++;
 	if (i >= tokens.size() || tokens[i] != ";")
+	{
+		std::cerr << BRED "Error: .conf not valid -> too many args for keyword: listen" RESET << std::endl;
 		return (false);
+	}
 	return (true);
 }
 
 bool	parseClientMaxBodySize(std::vector<std::string> tokens, size_t &i, Server &server)
 {
-	i++;
-	std::string input = tokens[i].c_str();
-	char end = input[input.size() - 1];
-	long nb = 0;
-	long multiplier = 1;
-	if (isalpha(end))
-	{
-		end = toupper(end);
-		if (end == 'K')
-			multiplier = 1024;
-		if (end == 'M')
-			multiplier = 1024 * 1024;
-		if (end == 'G')
-			multiplier = 1024 * 1024 * 1024;
-		input.erase(input.size() - 1);
-		for (size_t j = 0; j < input.size(); ++j)
-		{
-    		if (!isdigit(input[j]))
-        		return false;
-		}
-		nb = atoi(input.c_str());
-		if (nb < 1 || nb > LONG_MAX)
-			return (false);
-	}
-	else
-	{
-		nb = atoi(tokens[i].c_str());
-		if (nb < 1 || nb > LONG_MAX)
-			return (false);
-	}
-	if (nb < 1 || nb > LONG_MAX)
-			return (false);
-	nb *= multiplier;
-	server.Max_body_size = nb;
-	i++;
-	if (i >= tokens.size() || tokens[i] != ";")
+    i++;
+    if (i >= tokens.size())
 		return (false);
-	return (true);
+    std::string input = tokens[i];
+    if (input.empty())
+		return (false);
+    char unit = input[input.size() - 1];
+    long long multiplier = 1;
+    if (isalpha(unit)) 
+	{
+        unit = toupper(unit);
+        if (unit == 'K')
+			multiplier = 1024;
+        else if (unit == 'M')
+			multiplier = 1024 * 1024;
+        else if (unit == 'G')
+			multiplier = 1024 * 1024 * 1024;
+        else
+			return (false);
+        input.erase(input.size() - 1);
+    }
+    if (input.empty())
+		return (false);
+	for (size_t j = 0; j < input.size(); ++j)
+	{
+        if (!isdigit(input[j]))
+			return (false);
+    }
+    long long value = atol(input.c_str());
+    if (value > 0 && multiplier > 0 && value > (2147483647LL / multiplier))
+        return (false);
+    server.Max_body_size = static_cast<size_t>(value * multiplier);
+    i++;
+    if (i >= tokens.size() || tokens[i] != ";")
+        return (false);
+    return (true);
 }
 
 bool	parseRoot(std::vector<std::string> tokens, size_t &i, Server &server)
 {
 	i++;
-	if (i < tokens.size())
+	if (i < tokens.size() && tokens[i] != ";")
 	{
 		server.root = tokens[i];
 		i++;
 	}
 	else
+	{
+		std::cerr << BRED "Error: .conf not valid -> missing args for keyword: root" RESET << std::endl;
 		return (false);
+	}
 	if (i >= tokens.size() || tokens[i] != ";")
+	{
+		std::cerr << BRED "Error: .conf not valid -> too many args for keyword: root" RESET << std::endl;
 		return (false);
+	}
 	return (true);
 }
 bool	parseErrorPage(std::vector<std::string> tokens, size_t &i, Server &server)
@@ -555,7 +712,10 @@ bool	parseErrorPage(std::vector<std::string> tokens, size_t &i, Server &server)
         i++;
     }
     if (args.size() < 2 || (i >= tokens.size() || tokens[i] != ";"))
-        return (false);
+    {
+		std::cerr << BRED "Error: .conf not valid -> missing args for keyword: error_pages" RESET << std::endl;
+		return (false);
+	}
     std::string path = args.back();
     args.pop_back();
     for (size_t j = 0; j < args.size(); ++j)
@@ -563,11 +723,17 @@ bool	parseErrorPage(std::vector<std::string> tokens, size_t &i, Server &server)
         for (size_t k = 0; k < args[j].size(); k++)
 		{
             if (!isdigit(args[j][k]))
-				return false;
+			{
+				std::cerr << BRED "Error: .conf not valid -> invalid args for keyword: error_pages" RESET << std::endl;
+				return (false);
+			}
         }
         int code = atoi(args[j].c_str());
         if (code < 300 || code > 599)
-			return false;
+		{
+			std::cerr << BRED "Error: .conf not valid -> invalid code for keyword: error_pages" RESET << std::endl;
+			return (false);
+		}
         server.error_pages[code] = path;
     }
     return true;
@@ -599,7 +765,10 @@ bool	Config::parseServer(std::vector<std::string> tokens, size_t &i)
 		else if (tokens[i] == "client_max_body_size")
 		{
 			if (!parseClientMaxBodySize(tokens, i, server))
+			{
+				std::cerr << BRED "Error: .conf not valid -> client_max_body_size value invalid" RESET << std::endl;
 				return (false);
+			}
 		}
 		else if (tokens[i] == "error_page")
 		{
@@ -660,64 +829,64 @@ int Config::load(char *file_path)
 		return (-1);
 	}
 	if (!parseMain(tokens, 0))
-	{
-		std::cerr << BRED "Error: .conf not valid" RESET << std::endl;
 		return (-1);
-	}
+
+	if (!checkConfig())
+		return (-1);
 	// ======================
 	// = PRINT SERVERS TEST =
 	// ======================
-	// for (size_t i = 0; i < server_.size(); i++)
-	// {
+	for (size_t i = 0; i < server_.size(); i++)
+	{
 
-	// 	std::cout << BMAGENTA "SERVER "  << i + 1 <<  RESET << std::endl;
-	// 	for (size_t n = 0; n < server_[i].port.size(); n++)
-	// 	{
-	// 		std::cout << "PORT ==> " << server_[i].port[n] << std::endl;
-	// 	}
-	// 	std::cout << "MAX_BODY_SIZE ==> " << server_[i].Max_body_size << std::endl;
-	// 	std::cout << "ROOT ==> " << server_[i].root << std::endl;
+		std::cout << BMAGENTA "SERVER "  << i + 1 <<  RESET << std::endl;
+		for (size_t n = 0; n < server_[i].port.size(); n++)
+		{
+			std::cout << "PORT ==> " << server_[i].port[n] << std::endl;
+		}
+		std::cout << "MAX_BODY_SIZE ==> " << server_[i].Max_body_size << std::endl;
+		std::cout << "ROOT ==> " << server_[i].root << std::endl;
 
-	// 	std::cout << BMAGENTA "ERROR PAGES:" RESET << std::endl;
-	// 	for (std::map<int, std::string>::iterator it = server_[i].error_pages.begin(); it != server_[i].error_pages.end(); ++it) 
-	// 	{
-	// 	    std::cout << "  Code [" << it->first << "] => Path: " << it->second << std::endl;
-	// 	}
-	// 	for (size_t j = 0; j < server_[i].location.size(); j++)
-	// 	{
-	// 		std::cout << BCYAN "LOCATIONS "  << j + 1 <<  RESET << std::endl;
+		std::cout << BMAGENTA "ERROR PAGES:" RESET << std::endl;
+		for (std::map<int, std::string>::iterator it = server_[i].error_pages.begin(); it != server_[i].error_pages.end(); ++it) 
+		{
+		    std::cout << "  Code [" << it->first << "] => Path: " << it->second << std::endl;
+		}
+		for (size_t j = 0; j < server_[i].location.size(); j++)
+		{
+			std::cout << BCYAN "LOCATIONS "  << j + 1 <<  RESET << std::endl;
 
-	// 		std::cout << "PATH ==> " << server_[i].location[j].path << std::endl;
-	// 		std::cout << "ROOT ==> " << server_[i].location[j].root << std::endl;
-	// 		std::cout << "AUTOINDEX ==> " << server_[i].location[j].autoindex << std::endl;
-	// 		std::cout << "ERROR_CODE ==> " << server_[i].location[j].conf_error_code << std::endl;
-	// 		std::cout << "REDIRECTIONS ==> " << server_[i].location[j].redirections << std::endl;
-	// 		std::cout << "UPLOAD_ALLOWED ==> " << server_[i].location[j].upload_allowed << std::endl;
-	// 		std::cout << "UPLOAD_LOCATIONS ==> " << server_[i].location[j].upload_location << std::endl;
-	// 		std::cout << "MAX_BODY_SIZE ==> " << server_[i].location[j].Max_body_size << std::endl;
-	// 	}
-	// }
+			std::cout << "PATH ==> " << server_[i].location[j].path << std::endl;
+			std::cout << "ROOT ==> " << server_[i].location[j].root << std::endl;
+			std::cout << "AUTOINDEX ==> " << server_[i].location[j].autoindex << std::endl;
+			std::cout << "ERROR_CODE ==> " << server_[i].location[j].conf_error_code << std::endl;
+			std::cout << "REDIRECTIONS ==> " << server_[i].location[j].redirections << std::endl;
+			std::cout << "UPLOAD_ALLOWED ==> " << server_[i].location[j].upload_allowed << std::endl;
+			std::cout << "UPLOAD_LOCATIONS ==> " << server_[i].location[j].upload_location << std::endl;
+			std::cout << "MAX_BODY_SIZE ==> " << server_[i].location[j].Max_body_size << std::endl;
+		}
+	}
 
-	// std::cout << std::endl;
-	// std::cout << std::endl;
-	// std::cout << "Best root: " << getRoot("/size", 0) << std::endl;
-	// std::cout << "Server Id: " << getIdServer(3030) << std::endl;
-	// std::cout << "MaxBODYSIZE: " << getMaxBodySize("/size", 0) << std::endl;
-	// std::cout << "Server Method: " << isMethodAllowed("/", 0, "GET") << std::endl;
-	// std::cout << "Server Index: ";
-	// std::vector<std::string> indexs = getIndex("/uploads", 0);
-	// for (size_t n = 0; n < indexs.size(); n++)
-	// {
-	// 	std::cout << " " << indexs[n];
-	// }
-	// std::cout << std::endl;
-	// std::cout << "Server AutoIndex: " << getAutoIndex("/", 0) << std::endl;
-	// std::cout << "Server Conf_error_code: " << getConfErrorCode("/uploads/lolololo", 0) << std::endl;
+	std::cout << std::endl;
+	std::cout << std::endl;
+	std::cout << "Best root: " << getRoot("/uploads.html", 0) << std::endl;
+	std::cout << "Server Id: " << getIdServer(3030) << std::endl;
+	std::cout << "MaxBODYSIZE: " << getMaxBodySize("/upload", 0) << std::endl;
+	std::cout << "Server Method: " << isMethodAllowed("/", 0, "GET") << std::endl;
+	std::cout << "Server Index: ";
+	std::vector<std::string> indexs = getIndex("kdkdkd", 0);
+	for (size_t n = 0; n < indexs.size(); n++)
+	{
+		std::cout << " " << indexs[n];
+	}
+	std::cout << std::endl;
+	std::cout << "Server AutoIndex: " << getAutoIndex("/", 0) << std::endl;
+	std::cout << "Server Conf_error_code: " << getConfErrorCode("/uploads/lolololo", 0) << std::endl;
 
 
-	// std::cout << "Server Upload Allowed: " << getUploadAllowed("/size", 0) << std::endl;
-	// std::cout << "Server Upload Location: " << getUploadLocation("/uploads", 0) << std::endl;
-	// std::cout << "Server Error_page: " << getErrorPage(200, 0) << std::endl;
+	std::cout << "Server Upload Allowed: " << getUploadAllowed("/size", 0) << std::endl;
+	std::cout << "Server Upload Location: " << getUploadLocation("/uploads", 0) << std::endl;
+	std::cout << "Server Error_page: " << getErrorPage(200, 0) << std::endl;
 
 	return 0;
 }
