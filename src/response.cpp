@@ -1,4 +1,4 @@
-#include "../../include/Response.hpp"
+#include "../include/Response.hpp"
 
 int content_length(const char *file_name)
 {
@@ -68,7 +68,7 @@ std::string Response::create_response()
 	int conf_error_code = getConfErrorCode(get_path_to_send(), getIdServer(get_port()));
 	std::cout << "------------------ CONF ERROR CODE FOR METHOD " << get_method() << " | " << conf_error_code << "\n";
 
-	if(getMaxBodySize(get_path_to_send(), getIdServer(get_port())) < get_body().length())
+	if(getMaxBodySize(get_path_to_send(), getIdServer(get_port())) < static_cast<long>(get_body().length()))
 		set_response_code_message(413);
 	else if (conf_error_code != 200 && (get_path_to_send().find('.') == get_path_to_send().npos || get_method() == DELETE))
 		set_response_code_message(conf_error_code);

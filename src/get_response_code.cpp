@@ -1,5 +1,5 @@
-# include "../../include/webserv.hpp"
-# include "../../include/Response.hpp"
+# include "../include/webserv.hpp"
+# include "../include/Response.hpp"
 
 bool file_exist(const std::string &file_path)
 {
