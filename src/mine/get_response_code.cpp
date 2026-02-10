@@ -10,21 +10,10 @@ bool file_exist(const std::string &file_path)
 
 bool is_allowed_file(const std::string &file_name)
 {
-    if(file_name.find("data/uploads/") == 0)
+    if(file_name.find("data/uploads/") != file_name.npos)
 		return true;
 	return false;
 }
-
-// bool Response::is_allowed_method(std::string method)
-// {
-//     std::vector<std::string> method_allowed = getMethodAllowed(get_path_to_send().sub(getRoot().length() - 1), getIdServer(get_port()));
-
-//     if(method_allowed.empty())
-//         return true;
-//     if (std::find(method_allowed.begin(), method_allowed.end(), method) != method_allowed.end())
-//         return true;
-//     return false;
-// }
 
 void Response::set_response_code_message(int code)
 {
@@ -35,6 +24,8 @@ void Response::set_response_code_message(int code)
         code_message = "Created";
     else if (code == 204)
         code_message = "No Content";
+    else if (code == 302)
+        code_message = "Found";        
     else if (code == 404)
         code_message = "Bad Request";                
     else if (code == 403)
@@ -43,6 +34,8 @@ void Response::set_response_code_message(int code)
         code_message = "Not Found";
     else if (code == 405)
         code_message = "Method Not Allowed";
+    else if (code == 413)
+        code_message = "Payload Too Large";
     else
         code_message = "Default";
 
