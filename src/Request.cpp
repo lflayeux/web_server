@@ -5,7 +5,7 @@ int	Request::get_id_server() const
 	return (this->id_server_);
 }
 
-int	Request::get_method() const
+std::string	Request::get_method() const
 {
 	return (this->method_);
 }
@@ -40,13 +40,43 @@ std::string Request::get_body() const
 	return (this->body_);
 }
 
+std::string	Request::get_script_name() const
+{
+	return (this->script_name_);
+}
+
+bool	Request::is_cgi_request() const
+{
+	std::string	path = this->get_path_to_send();
+
+	size_t	dot_pos = path.find_last_of('.');
+	if (dot_pos == std::string::npos)
+		return (false);
+	
+	std::string	extension = path.substr(dot_pos);// exemple : .php ou .py
+
+	std::vector<std::string> cgi_extensions = this->get_cgi_extensions();
+
+	for (size_t i = 0; i < cgi_extensions.size(); ++i)
+	{
+		if (extension == cgi_extensions[i])
+			return (true);
+	}
+	return (false);
+}
+
+std::map<std::string, std::string>	Request::get_headers() const
+{
+	return (this->headers_);
+}
+
 void	Request::set_id_serv_()
 {
 	this->nb_serv_ = 2;
 	/* we will use value from Config class after merge */
 }
 
-void Request::set_method(int method)
+void Request::set_method(std::string method)
 {
 	this->method_ = method;
 	this->path_to_send_ = "/";

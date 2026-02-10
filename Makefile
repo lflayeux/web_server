@@ -6,6 +6,7 @@ NAME = serv
 
 SRC =	src/get_response.cpp \
 		src/Request.cpp \
+		src/CGI.cpp \
 		src/main.cpp
 		
 GREEN = \033[32m
@@ -14,9 +15,9 @@ RESET = \033[0m
 
 OBJ_DIR = build/
 
-OBJ = $(SRC:src/%.c=$(OBJ_DIR)%.o)
+OBJ = $(SRC:src/%.cpp=$(OBJ_DIR)%.o)
 
-$(OBJ_DIR)%.o : src/%.c
+$(OBJ_DIR)%.o : src/%.cpp
 	@mkdir -p $(OBJ_DIR)
 	@$(CXX) $(CFLAGS) -c $< -o $@
 
