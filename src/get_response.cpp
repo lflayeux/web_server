@@ -1,6 +1,6 @@
 #include <fstream>
-# include "../../include/webserv.hpp"
-# include "../../include/Response.hpp"
+# include "../include/webserv.hpp"
+# include "../include/Response.hpp"
 
 // int Response::response_code_GET()
 // {

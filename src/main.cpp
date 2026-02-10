@@ -92,10 +92,9 @@ int	main(int ac, char **av)
 		std::cerr << BRED "Use: ./serv [ficher .conf]" RESET << std::endl;
 		return (1);
 	}
-	Config config;
-	if (config.load(av[1]) != 0)
+	Response our_request;
+	if (our_request.load(av[1]) != 0)
 		return (1);
-	http_request	our_request;
 
 	std::map<int, std::string>	pending_requests;
 	sockaddr_in	srv, client;// Port, type d'ad IP + ad IP

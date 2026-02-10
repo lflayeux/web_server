@@ -1,5 +1,5 @@
-#include "../../include/webserv.hpp"
-#include "../../include/Response.hpp"
+#include "../include/webserv.hpp"
+#include "../include/Response.hpp"
 
 // CHECK AND CONSIDER PRG TECHNIC TO AVOID REFRESHING AND RESENDING DATA
 // int Response::response_code_POST()
