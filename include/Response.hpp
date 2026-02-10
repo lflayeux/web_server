@@ -18,7 +18,7 @@ public:
     void response_DELETE();
     std::string create_header(int content_length);
     void set_response_code_message(int code);
-    void create_path();
+    // void create_path();
     void path_to_error();
     std::string create_response();
 
@@ -27,6 +27,11 @@ public:
     int response_code_DELETE();
 
     std::string format_response();
+
+    void directory_behavior();
+    void file_behavior();
+
+
 
     // bool is_allowed_method(int method);
 
