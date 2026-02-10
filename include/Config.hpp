@@ -17,7 +17,7 @@ struct Location
 {
 	std::string					path; // le path de l'url matchant la requete (si pas error)
 	std::string					root; // le dossier physique ou chercher les fichier (si pas prendre celui du serveur)
-	long						Max_body_size; // le body size max de la requete client (format : 1024 (octets), 12k ou K (Ko), Mo et Go egalement)
+	long long					Max_body_size; // le body size max de la requete client (format : 1024 (octets), 12k ou K (Ko), Mo et Go egalement)
 	std::vector<std::string>	method; // liste des methodes autorises 
 	std::vector<std::string>	index; // fichier a chercher (ex: index.html parsing.html) si pas de match default = index.html et check autoindex
 	bool						autoindex; //  si on et pas de .html trouver lsiting du genre ls
@@ -32,7 +32,7 @@ struct Server
 {
 	std::vector<int>			port; // port(s) d'ecoute du serveur pour ce site (pas de port => conf error)
 	std::string					root; // le dossier physique ou chercher les fichier (si pas error)
-	long						Max_body_size; // le body size max de la requete client (format : 1024 (octets), 12k ou K (Ko), Mo et Go egalement)
+	long long					Max_body_size; // le body size max de la requete client (format : 1024 (octets), 12k ou K (Ko), Mo et Go egalement)
 	std::vector<Location>		location; // les differentes location des pages et leurs caracteristiques 
 	std::map<int, std::string>	error_pages; // les pages d'error personnalises (si 0 utilises generiqeus)
 };
@@ -43,7 +43,7 @@ class Config
 		std::vector<Server> server_; // Liste des sites (dans le .conf chaque server{} definit un site) 1 minimum sinon error
 		
 	public:
-		Config(/* args */){};
+		Config(){};
 		virtual ~Config(){};
 		
 
@@ -52,7 +52,6 @@ class Config
 		bool	parseServer(std::vector<std::string> tokens, size_t &start);
 		bool	parseLocation(std::vector<std::string> tokens, size_t &start, Server &server);
 
-		// 
 		int							getIdServer(int port);
 		
 		int							getBestPath(std::string path, int server_id);
@@ -68,12 +67,11 @@ class Config
 		
 		std::string					getErrorPage(int error, int server_id);
 
-	// [] getMaxBodySize
+		bool						checkListen();
+		bool						checkUpload();
+		bool						checkRedir();
+
+		bool						checkConfig();
 };
-
-// ETRE HYPER RIGOUREUX AVEC LE PARSING DES QUE TOKENS MANQUANT ERROR
-
-// PARSE EN TOKEN CHAQUE LIGNE
-//
 
 #endif
