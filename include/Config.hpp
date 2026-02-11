@@ -41,7 +41,7 @@ class Config
 {
 	private:
 		std::vector<Server> server_; // Liste des sites (dans le .conf chaque server{} definit un site) 1 minimum sinon error
-		int	nb_serv_;
+		// int	nb_serv_;
 		std::string	script_name_;
 		std::string	cgi_path_;
 		std::vector<std::string> cgi_extensions_;

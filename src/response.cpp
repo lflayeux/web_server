@@ -56,9 +56,17 @@ std::string Response::format_response()
 	while(std::getline(index_fd, line))
 		body += line + "\r\n";
 
-	msg = create_header(body.length());
-	msg += body;
-
+	if (autoindex_.empty())
+	{
+		msg = create_header(body.length());
+		msg += body;
+	}
+	else
+	{
+		msg = create_header(autoindex_.length());
+		msg += autoindex_;
+		autoindex_.erase();
+	}
     return (msg);    
 }
 
