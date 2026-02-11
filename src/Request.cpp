@@ -7,12 +7,12 @@ int	Request::get_id_server() const
 
 std::string	Request::get_method() const
 {
-	return (this->method_);
+    return (this->method_);
 }
 
 int	Request::get_port() const
 {
-	return (this->port_);
+    return (this->port_);
 }
 
 int	Request::get_content_length() const
@@ -40,11 +40,6 @@ std::string Request::get_body() const
 	return (this->body_);
 }
 
-std::string	Request::get_script_name() const
-{
-	return (this->script_name_);
-}
-
 bool	Request::is_cgi_request() const
 {
 	std::string	path = this->get_path_to_send();
@@ -70,11 +65,6 @@ std::map<std::string, std::string>	Request::get_headers() const
 	return (this->headers_);
 }
 
-void	Request::set_id_serv_()
-{
-	this->nb_serv_ = 2;
-	/* we will use value from Config class after merge */
-}
 
 void Request::set_method(std::string method)
 {
@@ -144,7 +134,7 @@ void Request::set_content_length(const std::string &line)
 
 void Request::set_port(int port)
 {
-	this->port_ = port;
+    this->port_ = port;
 }
 
 void	Request::add_header(const std::string &header, const std::string &value)
@@ -177,6 +167,6 @@ std::ostream &operator<<(std::ostream &flux, Request const &obj)
 	flux << "METHOD: " << obj.get_method() << " | port: " << obj.get_port()
 	<< " | content-length: " << obj.get_content_length() << " | Connection: "
 	<< keep_alive << " | version: " << obj.get_version() <<
-	" | path: " << obj.get_path_to_send() << std::endl;
+	" | path: " << obj.get_path_to_send()<< " | body: " << obj.get_body() << std::endl;
 	return (flux);
 }

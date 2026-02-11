@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mon Serveur Web</title>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #f3f3f3;
+    color: #333;
+}
+
+header {
+    background: #1e88e5;
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+main {
+    padding: 2rem;
+    max-width: 900px;
+    margin: auto;
+}
+
+.card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    background: #1e88e5;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+button.danger {
+    background: #e53935;
+}
+
+button.secondary {
+    background: #43a047;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    background: #ddd;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Bienvenue sur mon serveur web</h1>
+    <p>Page statique générée par notre grosse team</p>
+</header>
+
+<main>
+    <div class="card">
+        <h2>Navigation</h2>
+        <p>Changer de page via une requête GET :</p>
+        <button type="button" class="btn-primary" onclick="window.location.href='/page2.html'">
+            Aller sur la page 2
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>Upload de données</h2>
+        <p>Envoyer des données au serveur (POST) :</p>
+        
+        <form action="/uploads" method="POST">
+            <div class="form-spacer">
+                <input type="text" name="data" placeholder="Entrez un texte" required />
+            </div>
+
+            <div class="vertical-gap"></div>
+            
+            <button type="submit" class="btn-secondary">Upload</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Gestion des fichiers</h2>
+        <p>Supprimer définitivement le fichier :</p>
+        <button type="button" class="danger" onclick="sendDelete()">Delete data.txt</button>
+    </div>
+
+    <script>
+    function sendDelete() {
+        if (confirm("Voulez-vous vraiment supprimer ce fichier ?")) {
+            fetch('/uploads/data.txt', {
+                method: 'DELETE'
+            }).then(response => {
+                if (response.ok) {
+                    alert("Le fichier a été supprimé du serveur avec succès.");
+                    window.location.href = '/index.html';
+                } else {
+                    alert("Erreur " + response.status + " : Suppression impossible.");
+                }
+            });
+        }
+    }
+    </script>
+</main>
+
+<footer>
+    © 2026 Mon Serveur Web
+</footer>
+
+</body>
+</html>
