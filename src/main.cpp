@@ -1,5 +1,7 @@
 #include "../include/Request.hpp"
 #include "../include/CGI.hpp"
+#include "../include/Response.hpp"
+#include "../include/Config.hpp"
 
 
 
@@ -77,13 +79,16 @@ int handle_request(const std::string &request, Request &our_request)
 	return 0;
 }
 
-
 int	main(int ac, char **av)
 {
-	(void)ac;
-	(void)av;
-	Request	our_request;
-	Config	config;
+	if (ac != 2)
+	{
+		std::cerr << BRED "Use: ./serv [ficher .conf]" RESET << std::endl;
+		return (1);
+	}
+	Response our_request;
+	if (our_request.load(av[1]) != 0)
+		return (1);
 
 	std::map<int, std::string>	pending_requests;
 	sockaddr_in	srv, client;// Port, type d'ad IP + ad IP
@@ -188,31 +193,11 @@ int	main(int ac, char **av)
 					/* On a une string en arg, on veut la parser et la traiter */
 					if (handle_request(pending_requests[srv_events_list[i].data.fd], our_request) != 0)
 						std::cerr << "Error with handling request\n";// + envoyer code erreur
-					// Test CGI: build environment from parsed request
-					std::string	response;
-
-					if (our_request.is_cgi_request())
-					{
-						std::cout << BGREEN << "Debug CGI\n" << RESET;
-						try
-						{
-							CGI	cgi(our_request, config);
-							std::cout << BGREEN << "Debug CGI, still OK\n" << RESET;
-							response = cgi.execute();
-						}
-						catch (const std::exception &e)
-						{
-							std::cerr << BRED << "oops\n" << RESET;
-							response = "ERROR";
-						}
-					}
-					else
-						response = get_response(our_request.get_path_to_send().c_str());
 					std::cout << BMAGENTA "Envoi de la réponse..." << RESET << std::endl;
 					// Générer la réponse (on devrait la stocker aussi dans un container)
-					// std::string reponse = get_response(our_request.get_path_to_send().c_str());
+					std::string reponse = our_request.create_response();
 					// std::string reponse = get_response("index.html");
-					send(srv_events_list[i].data.fd, response.c_str(), response.size(), 0);
+					send(srv_events_list[i].data.fd, reponse.c_str(), reponse.size(), 0);
 					// On a fini avec ce client
 					epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
 					close(srv_events_list[i].data.fd);
@@ -220,10 +205,11 @@ int	main(int ac, char **av)
 					std::cout << BRED "Client déconnecté" << RESET << std::endl;
 				}
 				else if (srv_events_list[i].events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
+				{
 					std::cerr << "\n\nQUIT ERROR\n\n";
+				}
 			}
 		}
 	}
 }
-
 /* a faire : Parser la requete, faire différentes pages en html, */

@@ -7,7 +7,14 @@ NAME = serv
 SRC =	src/get_response.cpp \
 		src/Request.cpp \
 		src/CGI.cpp \
-		src/main.cpp
+		src/get_response_code.cpp \
+		src/response.cpp \
+		src/post_response.cpp \
+		src/delete_response.cpp \
+		src/html_path.cpp \
+		src/Request.cpp \
+		src/main.cpp \
+		src/Config.cpp
 		
 GREEN = \033[32m
 YELLOW = \033[33m

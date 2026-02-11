@@ -1,6 +1,7 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
+# include "Config.hpp"
 # include "colors.hpp"
 # include <sys/socket.h>
 # include <sys/epoll.h>
@@ -29,32 +30,6 @@ enum	method
 	DELETE,
 };
 
-/* TO TEST before merge */
-class	Config
-{
-	protected:
-		int	nb_serv_;
-		std::string	script_name_;
-		std::string	cgi_path_;
-		std::vector<std::string> cgi_extensions_;
-	public:
-		Config() : nb_serv_(2), script_name_("test.py"), cgi_path_("www/cgi-bin/")
-		{
-			cgi_extensions_.push_back(".php");
-			cgi_extensions_.push_back(".py");
-			cgi_extensions_.push_back(".pl");
-		};
-		~Config(){};
-		std::string	get_cgi_path() const
-		{
-			return cgi_path_;
-		};
-		std::vector<std::string> get_cgi_extensions() const
-		{
-			return cgi_extensions_;
-		};		
-};
-
 class Request : public Config
 {
 	public:
@@ -68,10 +43,8 @@ class Request : public Config
 		bool		get_keep_alive() const;
 		std::string get_path_to_send() const;
 		std::string get_body() const;
-		std::string	get_script_name() const;
 		bool		is_cgi_request() const;
 		std::map<std::string, std::string>	get_headers() const;
-		void		set_id_serv_();
 		void		set_method(std::string method);
 		void 		set_path(const std::string &path);
 		void 		set_version(const std::string &version);
