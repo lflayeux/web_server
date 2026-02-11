@@ -9,6 +9,7 @@ class Response : public Request
 {
 private:
     std::pair<int, std::string > error_code_;
+    std::string                 autoindex_;
 public:
     Response(){};
     ~Response(){};
@@ -31,6 +32,7 @@ public:
     void directory_behavior();
     void file_behavior();
 
+    bool create_autoindex_page(const std::string &path_to_index);
 
 
     // bool is_allowed_method(int method);

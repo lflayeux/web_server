@@ -13,6 +13,7 @@ SRC =	src/get_response.cpp \
 		src/post_response.cpp \
 		src/delete_response.cpp \
 		src/html_path.cpp \
+		src/autoindex.cpp \
 		src/Request.cpp \
 		src/main.cpp \
 		src/Config.cpp
