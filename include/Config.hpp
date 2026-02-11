@@ -12,6 +12,7 @@
 # include <cstdlib>
 # include <climits>
 # include <cstring>
+# include <sys/epoll.h>
 
 struct Location
 {
@@ -96,6 +97,11 @@ class Config
 		};		
 };
 
-std::vector<int>	create_multi_srv(const std::vector<int> &all_ports, const int &epoll_fd);
+class Request;
+class Response;
 
+int 				parse_request(const std::string &request, Request &our_request);
+std::vector<int>	create_multi_srv(const std::vector<int> &all_ports, const int &epoll_fd);
+void				client_send_request(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_request, const int &epoll_fd);
+void				client_get_response(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_requests, const int &epoll_fd, Response &our_request);
 #endif
