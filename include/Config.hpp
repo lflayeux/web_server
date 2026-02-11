@@ -49,7 +49,13 @@ class Config
 		Config(){};
 		virtual ~Config(){};
 		
-
+		std::vector<int>			getPorts()
+		{
+			std::vector<int>		all_ports;
+			for (size_t i = 0; i < server_.size(); i++)
+				all_ports.insert(all_ports.begin(), server_[i].port.begin(), server_[i].port.end());
+			return (all_ports);
+		};
 		int		load(char *file_path);
 		bool	parseMain(std::vector<std::string> tokens, size_t i);
 		bool	parseServer(std::vector<std::string> tokens, size_t &start);
@@ -89,5 +95,7 @@ class Config
 			return cgi_extensions_;
 		};		
 };
+
+std::vector<int>	create_multi_srv(const std::vector<int> &all_ports, const int &epoll_fd);
 
 #endif

@@ -7,6 +7,7 @@ NAME = serv
 SRC =	src/get_response.cpp \
 		src/Request.cpp \
 		src/CGI.cpp \
+		src/multi_srv.cpp \
 		src/get_response_code.cpp \
 		src/response.cpp \
 		src/post_response.cpp \
