@@ -3,7 +3,7 @@
 #include "../include/Response.hpp"
 #include "../include/Config.hpp"
 
-
+#include <algorithm>
 
 int handle_request(const std::string &request, Request &our_request)
 {
@@ -91,48 +91,24 @@ int	main(int ac, char **av)
 		return (1);
 
 	std::map<int, std::string>	pending_requests;
-	sockaddr_in	srv, client;// Port, type d'ad IP + ad IP
-
-	int	fd_srv = socket(AF_INET, SOCK_STREAM, 0);
-	if (fd_srv < 0)
-	{
-		std::cerr << "Error creating socket\n";
-		return (-1);
-	}
-	int opt = 1;
-	setsockopt(fd_srv, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
-	// Non blocking server
-	int flags = fcntl(fd_srv, F_GETFL);
-	fcntl(fd_srv, F_SETFL, flags | O_NONBLOCK);
-	// memset(&srv, 0, sizeof(srv));
-	srv.sin_family = AF_INET;
-	srv.sin_addr.s_addr = INADDR_ANY;
-	srv.sin_port = htons(8080);
+	sockaddr_in client;// Port, type d'ad IP + ad IP
 	
-	if (bind(fd_srv, (sockaddr*)&srv, sizeof(srv)) < 0)
-	{
-		std::cerr << "Error binding socket to IP/port\n";
-		return (-2);
-	}
-
-	if (listen(fd_srv, SOMAXCONN) < 0)
-	{
-		std::cerr << "Error listening socket\n";
-		return (-3);
-	}
-	else
-		std::cout << "This socket has the ability to queue for incoming connexions (TCP)\n";
-	std::cout << "Server listening on port 8080...\n";
-
+	
+	std::vector<int>	all_ports = our_request.getPorts();
+	std::vector<int>	server_socket_fds;
 	// epoll
 	int	epoll_fd = epoll_create1(EPOLL_CLOEXEC);// means CLOSE on exec
 	
-	epoll_event	srv_events, srv_events_list[64];
-	srv_events.events = EPOLLIN;
-	srv_events.data.fd = fd_srv;
-
-	epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd_srv, &srv_events);
+	try
+	{
+		server_socket_fds = create_multi_srv(all_ports, epoll_fd);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	
+	epoll_event	srv_events_list[64];
 
 	while (1)
 	{
@@ -141,13 +117,13 @@ int	main(int ac, char **av)
 		std::cout << BCYAN "NB OF EVENT" << nb_events <<  RESET << std::endl;
 		for (int i = 0; i < nb_events; i++)
 		{
-
+			std::vector<int>::const_iterator fd_srv = std::find(server_socket_fds.begin(), server_socket_fds.end(), srv_events_list[i].data.fd);
 			// If the event is on the server socket
-			if (srv_events_list[i].data.fd == fd_srv)
+			if (fd_srv != server_socket_fds.end())
 			{
 				socklen_t client_len = sizeof(client);
 
-				int client_fd = accept(fd_srv, (sockaddr*)&client, &client_len);
+				int client_fd = accept(*fd_srv, (sockaddr*)&client, &client_len);
 				std::cout << BMAGENTA "New client connected: fd=" << client_fd << RESET << "\n";
 				int flags = fcntl(client_fd, F_GETFL);
 				fcntl(client_fd, F_SETFL, flags | O_NONBLOCK);
@@ -205,9 +181,7 @@ int	main(int ac, char **av)
 					std::cout << BRED "Client déconnecté" << RESET << std::endl;
 				}
 				else if (srv_events_list[i].events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
-				{
 					std::cerr << "\n\nQUIT ERROR\n\n";
-				}
 			}
 		}
 	}
