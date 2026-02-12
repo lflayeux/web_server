@@ -26,7 +26,10 @@ void Response::directory_behavior()
 {
 	std::string path_to_find = get_path_to_send();
 	if (path_to_find[path_to_find.length() - 1] != '/')
-		path_to_find += "/";
+	{
+		set_response_code_message(301);
+		return ;
+	}
 	std::string root_dir  = getRoot(path_to_find, getIdServer(get_port()));
 	std::string full_path  = root_dir + path_to_find;
 	std::string default_path = full_path + "index.html";

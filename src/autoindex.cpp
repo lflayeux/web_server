@@ -2,17 +2,16 @@
 
 std::string create_page(std::vector<std::pair<std::string, int> > file_list)
 {
-    std::string autoindex_html = "<html>\r\n<head><title>Index of /</title></head>\r\n";
-    autoindex_html += "<body>\r\n<h1>Index of /</h1>\r\n<hr>\r\n<pre>\r\n";
+    std::string autoindex_html = "<html>\r\n<head><title>Index /</title></head>\r\n";
+    autoindex_html += "<body>\r\n<h1>Index /</h1>\r\n<hr>\r\n<pre>\r\n";
 
     for (std::size_t i = 0; i < file_list.size(); ++i)
     {
         std::string name = file_list[i].first;
-        std::string link = file_list[i].first;
         int type = file_list[i].second;
         if (type == DT_DIR)
-            link += "/";
-        autoindex_html += "<a href=\"" + link + "\">" + name + "</a>\r\n";
+            name += "/";
+        autoindex_html += "<a href=\"" + name + "\">" + name + "</a>\r\n";
     }
     autoindex_html += "</pre>\r\n<hr>\r\n</body>\r\n</html>";
     std::cout << "-------------AUTOINDEX:\n" << autoindex_html << std::endl;

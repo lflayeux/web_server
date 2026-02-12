@@ -30,6 +30,8 @@ std::string Response::create_header(int content_length)
 		std::string redirection = getRedirections(get_path_to_send(), getIdServer(get_port()));
 		if (conf_error_code == error_code_.first && !redirection.empty())
 			header += "Location: " + redirection + "\r\n";
+		else if (error_code_.first == 301)
+			header += "Location: " + get_path_to_send() + "/" + "\r\n";
 		else
 			header += "Location: /uploads.html\r\n";
 	}
@@ -82,10 +84,9 @@ std::string Response::create_response()
 		set_response_code_message(conf_error_code);
 	else
 	{
-		// MANQUE LE get_root() de LUCAS
-		// if (!isMethodAllowed(get_path_to_send(), getIdServer(get_port()), get_method()))
-		// 	set_response_code_message(405);			
-		if(get_method() == "POST")
+		if (!isMethodAllowed(get_path_to_send(), getIdServer(get_port()), get_method()))
+			set_response_code_message(405);			
+		else if(get_method() == "POST")
 			response_POST();
 		else if(get_method() == "GET")
 			response_GET();
