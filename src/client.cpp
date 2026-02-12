@@ -41,8 +41,27 @@ void	client_get_response(const epoll_event *srv_events_list, const int &i, std::
 	if (parse_request(pending_requests[srv_events_list[i].data.fd], our_request) != 0)
 		std::cerr << "Error with handling request\n";// + envoyer code erreur
 	std::cout << BMAGENTA "Envoi de la réponse..." << RESET << std::endl;
+	std::string	reponse;
+	if (our_request.is_cgi_request())
+	{
+		std::cout << BGREEN << "Il s'agit d'un CGI\n" << RESET;
+		CGI	my_cgi(our_request);
+		try
+		{
+			reponse = my_cgi.execute();
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what() << '\n';
+		}
+		
+	}
+	else
+	{
+		std::cout << BGREEN << "Il s'agit d'une requête standard\n" << RESET;
+		reponse = our_request.create_response();
+	}
 	// Générer la réponse (on devrait la stocker aussi dans un container)
-	std::string reponse = our_request.create_response();
 	// std::string reponse = get_response("index.html");
 	send(srv_events_list[i].data.fd, reponse.c_str(), reponse.size(), 0);
 	// On a fini avec ce client
