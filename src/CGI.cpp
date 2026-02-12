@@ -11,15 +11,15 @@ static std::string	get_a_string(int value)
 void	CGI::build_environnement()
 {
 // 1. Variables standards
-    environnement_["REQUEST_METHOD"] = request_.get_method();
-    environnement_["CONTENT_LENGTH"] = get_a_string(request_.get_content_length());
-    environnement_["PATH_INFO"] = request_.get_path_to_send();
+    environnement_["REQUEST_METHOD"] = our_response_.get_method();
+    environnement_["CONTENT_LENGTH"] = get_a_string(our_response_.get_content_length());
+    environnement_["PATH_INFO"] = our_response_.get_path_to_send();
     environnement_["SERVER_PROTOCOL"] = "HTTP/1.1";
     environnement_["GATEWAY_INTERFACE"] = "CGI/1.1";
-    environnement_["SERVER_PORT"] = get_a_string(request_.get_port());
+    environnement_["SERVER_PORT"] = get_a_string(our_response_.get_port());
 
     // 2. Variables specifiques aux headers
-    std::map<std::string, std::string> headers = request_.get_headers(); 
+    std::map<std::string, std::string> headers = our_response_.get_headers(); 
     for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it)
 	{
         std::string key = "HTTP_" + it->first;
@@ -77,7 +77,7 @@ CGI::~CGI()
 
 std::string	CGI::get_script_path() const
 {
-	return (config_.get_cgi_path() + request_.get_script_name());
+	return (our_response_.get_cgi_path(our_response_.get_path_to_send(), our_response_.getIdServer(our_response_.get_port())) + our_response_.get_script_name());
 }
 
 std::string	CGI::parse_cgi_output(const std::string &output)
@@ -136,16 +136,16 @@ std::string	CGI::execute()
 
 		char *av[2];
 		std::string	script_path = get_script_path();
-
 		// DEBUG
    		std::cerr << "DEBUG: Script path = [" << script_path << "]" << std::endl;
     	std::cerr << "DEBUG: File exists? " << (access(script_path.c_str(), F_OK) == 0 ? "YES" : "NO") << std::endl;
     	std::cerr << "DEBUG: File executable? " << (access(script_path.c_str(), X_OK) == 0 ? "YES" : "NO") << std::endl;
-
+		
+		
 		av[0] = const_cast<char *>(script_path.c_str());
 		av[1] = NULL;
-
-		std::cout << BGREEN << "Debug : just before EXECVE\n" << RESET;
+		
+		std::cerr << BGREEN << "Debug : just before EXECVE - script_path:" << script_path << RESET << std::endl;
 		execve(av[0], av, envp_);
 
 		std::cerr << "execve failed: " << strerror(errno) << std::endl;
@@ -156,9 +156,9 @@ std::string	CGI::execute()
 		close(pipe_in[0]);
 		close(pipe_out[1]);
 
-		if (request_.get_method() == "POST")// on veut envoyer le body dans stdin du CGI si jamais la method = POST
+		if (our_response_.get_method() == "POST")// on veut envoyer le body dans stdin du CGI si jamais la method = POST
 		{
-			std::string body = request_.get_body();
+			std::string body = our_response_.get_body();
 			write(pipe_in[1], body.c_str(), body.size());
 		}
 		close(pipe_in[1]);

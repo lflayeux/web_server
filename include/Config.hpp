@@ -26,6 +26,7 @@ struct Location
 	std::string					redirections; // lien de redirections si return code dans les 300
 	bool						upload_allowed; // si off pas d'upload (off par defaut)
 	std::string					upload_location; // si upload on obligatoire
+	std::string					cgi_path_;
 };
 
 
@@ -36,6 +37,7 @@ struct Server
 	long long					Max_body_size; // le body size max de la requete client (format : 1024 (octets), 12k ou K (Ko), Mo et Go egalement)
 	std::vector<Location>		location; // les differentes location des pages et leurs caracteristiques 
 	std::map<int, std::string>	error_pages; // les pages d'error personnalises (si 0 utilises generiqeus)
+	std::string					cgi_path_;
 };
 
 class Config
@@ -44,7 +46,6 @@ class Config
 		std::vector<Server> server_; // Liste des sites (dans le .conf chaque server{} definit un site) 1 minimum sinon error
 		// int	nb_serv_;
 		std::string	script_name_;
-		std::string	cgi_path_;
 		std::vector<std::string> cgi_extensions_;
 	public:
 		Config(){};
@@ -62,9 +63,9 @@ class Config
 		bool	parseServer(std::vector<std::string> tokens, size_t &start);
 		bool	parseLocation(std::vector<std::string> tokens, size_t &start, Server &server);
 
-		int							getIdServer(int port);
+		int						getIdServer(int port) const;
 		
-		int							getBestPath(std::string path, int server_id);
+		int						getBestPath(std::string path, int server_id) const;
 		std::string					getRoot(std::string path, int server_id);
 		long						getMaxBodySize(std::string path, int server_id);
 		bool						isMethodAllowed(std::string path, int server_id, std::string method);
@@ -74,7 +75,7 @@ class Config
 		std::string					getRedirections(std::string path, int server_id);
 		bool						getUploadAllowed(std::string path, int server_id);
 		std::string					getUploadLocation(std::string path, int server_id);
-		
+		void						setCgiExtensions();
 		std::string					getErrorPage(int error, int server_id);
 
 		bool						checkListen();
@@ -83,10 +84,7 @@ class Config
 
 		bool						checkConfig();
 
-		std::string					get_cgi_path() const
-		{
-			return cgi_path_;
-		};
+		std::string					get_cgi_path(std::string path, int server_id) const;
 		std::string					get_script_name() const
 		{
 			return script_name_;

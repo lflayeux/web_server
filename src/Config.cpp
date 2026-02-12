@@ -77,7 +77,7 @@ bool	Config::checkConfig()
 // ======================================
 
 /** **/
-int Config::getIdServer(int port)
+int Config::getIdServer(int port) const
 {
 	for (size_t i = 0; i < server_.size(); i++)
 	{
@@ -90,7 +90,7 @@ int Config::getIdServer(int port)
 	return (-1);
 }
 
-int		Config::getBestPath(std::string path, int server_id)
+int		Config::getBestPath(std::string path, int server_id) const
 {
 	int id = -1;
     size_t longest_match = 0;
@@ -125,6 +125,15 @@ std::string Config::getRoot(std::string path, int server_id)
 	if (i != -1)
 		best_root = server_[server_id].location[i].root;
     return (best_root);
+}
+
+std::string Config::get_cgi_path(std::string path, int server_id) const
+{
+	std::string bestCgiPath = server_[server_id].cgi_path_;
+	int i = getBestPath(path, server_id); 
+	if (i != -1)
+		bestCgiPath = server_[server_id].location[i].cgi_path_;
+    return (bestCgiPath);
 }
 
 std::string Config::getErrorPage(int error, int server_id)
@@ -462,6 +471,27 @@ bool	parseUploadAllowed(std::vector<std::string> tokens, size_t &i, Location &lo
 	return (true);
 }
 
+bool	parseCGI(std::vector<std::string> tokens, size_t &i, Location &location)
+{
+	i++;
+	if (i < tokens.size() && tokens[i] != ";")
+	{
+		location.cgi_path_ = tokens[i];
+		i++;
+	}
+	else
+	{
+		std::cerr << BRED "Error: .conf not valid -> missing args for keyword: cgi_path" RESET << std::endl;
+		return (false);
+	}
+	if (i >= tokens.size() || tokens[i] != ";")
+	{
+		std::cerr << BRED "Error: .conf not valid -> too many args for keyword: cgi_path" RESET << std::endl;
+		return (false);
+	}
+	return (true);
+}
+
 bool	parseUploadLocation(std::vector<std::string> tokens, size_t &i, Location &location)
 {
 	i++;
@@ -602,6 +632,11 @@ bool	Config::parseLocation(std::vector<std::string> tokens, size_t &start, Serve
 				std::cerr << BRED "Error: .conf not valid -> client_max_body_size value invalid" RESET << std::endl;
 				return (false);
 			}
+		}
+		else if (tokens[i] == "cgi_path")
+		{
+			if (!parseCGI(tokens, i, location))
+				return (false);
 		}
 		else if (tokens[i] == "}")
 			break;
@@ -806,6 +841,14 @@ bool Config::parseMain(std::vector<std::string> tokens, size_t i)
 }
 
 
+void	Config::setCgiExtensions()
+{
+	cgi_extensions_.push_back(".py");
+	cgi_extensions_.push_back(".php");
+	cgi_extensions_.push_back(".pl");
+
+}
+
 int Config::load(char *file_path)
 {
 	/* verif que le fichier existe bien et qu'on peut l'ouvrir */
@@ -872,6 +915,7 @@ int Config::load(char *file_path)
 	std::cout << std::endl;
 	std::cout << std::endl;
 	std::cout << "Best root: " << getRoot("/uploads.html", 0) << std::endl;
+	// std::cout << "cgi_path: " << get_cgi_path() << std::endl;
 	std::cout << "Server Id: " << getIdServer(3030) << std::endl;
 	std::cout << "MaxBODYSIZE: " << getMaxBodySize("/upload", 0) << std::endl;
 	std::cout << "Server Method: " << isMethodAllowed("/", 0, "GET") << std::endl;
@@ -889,7 +933,7 @@ int Config::load(char *file_path)
 	std::cout << "Server Upload Allowed: " << getUploadAllowed("/size", 0) << std::endl;
 	std::cout << "Server Upload Location: " << getUploadLocation("/uploads", 0) << std::endl;
 	std::cout << "Server Error_page: " << getErrorPage(200, 0) << std::endl;
-
+	setCgiExtensions();
 	return 0;
 }
 // PARSE_MAIN

@@ -47,13 +47,14 @@ bool	Request::is_cgi_request() const
 	size_t	dot_pos = path.find_last_of('.');
 	if (dot_pos == std::string::npos)
 		return (false);
-	
 	std::string	extension = path.substr(dot_pos);// exemple : .php ou .py
-
+		
 	std::vector<std::string> cgi_extensions = this->get_cgi_extensions();
-
+		
+	std::cout << UYELLOW << "still inside is_cgi_request() | cgi_extensions.size = "  << cgi_extensions.size() << RESET << std::endl;
 	for (size_t i = 0; i < cgi_extensions.size(); ++i)
 	{
+		std::cout << UYELLOW << "ext: [" << extension << "] | vs ext[" << i << "][" << cgi_extensions[i] << "]\n" << RESET;
 		if (extension == cgi_extensions[i])
 			return (true);
 	}
