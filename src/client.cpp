@@ -13,6 +13,15 @@ void	client_send_request(const epoll_event *srv_events_list, const int &i, std::
 		buffer[bytes] = '\0';
 		full_data.append(buffer);
 	}
+	// Si le client ferme la connexion ou envoie rien
+	if (bytes == 0 || (bytes < 0 && errno != EAGAIN && errno != EWOULDBLOCK))
+	{
+		std::cout << BRED "Client disconnected (empty/closed)" << RESET << std::endl;
+		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
+		close(srv_events_list[i].data.fd);
+		pending_requests.erase(srv_events_list[i].data.fd);
+		return;
+	}
 	if (full_data.find("\r\n\r\n") != std::string::npos)
 	{
 		std::cout << "Requête reçue :\n" << full_data << std::endl;

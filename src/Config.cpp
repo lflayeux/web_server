@@ -174,6 +174,8 @@ bool Config::isMethodAllowed(std::string path, int server_id, std::string method
 {
 	std::vector<std::string> empty;
 	int i = getBestPath(path, server_id);
+	if (server_[server_id].location[i].method.empty())
+		return (true);
 	if (i != -1)
 	{
 		for (size_t n = 0; n < server_[server_id].location[i].method.size(); n++)
