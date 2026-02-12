@@ -86,14 +86,21 @@ std::string	CGI::parse_cgi_output(const std::string &output)
 	// Le CGI peut retourner :
 	// 1. Des headers + body (mode "parsed header")
 	// 2. Juste un body (mode "non-parsed header", NPH)
-
-	size_t header_end = output.find("\r\n\r\n");
+	std::string line;
+	std::string body;
+	std::stringstream ss(output);
+	while(std::getline(ss, line))
+		body += line + "\r\n";
+		
+	size_t header_end = body.find("\r\n\r\n");
 	if (header_end == std::string::npos)
-		return (output);  // Pas de headers, retour direct
+	{
+		return (body);  // Pas de headers, retour direct		
+	}
 
 	// Extraire headers et body
-	std::string headers = output.substr(0, header_end);
-	std::string body = output.substr(header_end + 4);
+	std::string headers = body.substr(0, header_end);
+	body = body.substr(header_end + 4);
 
 	// Construire la réponse HTTP complète
 	std::string response = "HTTP/1.1 200 OK\r\n";
@@ -179,7 +186,7 @@ std::string	CGI::execute()
 		
 		//DEBUG : Afficher l'output en brut
         std::cout << "=== CGI RAW OUTPUT ===" << std::endl;
-        std::cout << output << std::endl;
+        // std::cout << output << std::endl;
         std::cout << "======================" << std::endl;
         
 		return (parse_cgi_output(output));
