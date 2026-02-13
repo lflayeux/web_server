@@ -77,7 +77,7 @@ CGI::~CGI()
 
 std::string	CGI::get_script_path() const
 {
-	return (our_response_.get_cgi_path(our_response_.get_path_to_send(), our_response_.getIdServer(our_response_.get_port())) + our_response_.get_script_name());
+	return (our_response_.get_cgi_path(our_response_.get_path_to_send(), our_response_.getIdServer(our_response_.getHostName(), our_response_.get_port())) + our_response_.get_script_name());
 }
 
 std::string	CGI::parse_cgi_output(const std::string &output)

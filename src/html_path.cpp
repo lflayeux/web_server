@@ -2,7 +2,7 @@
 
 void Response::path_to_error()
 {
-	std::string error_page = getErrorPage(error_code_.first, getIdServer(get_port()));
+	std::string error_page = getErrorPage(error_code_.first, getIdServer(getHostName(),get_port()));
 	if (error_page != "default")
 	{
 		set_path(error_page);

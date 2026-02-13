@@ -34,6 +34,7 @@ struct Location
 
 struct Server
 {
+	std::string					server_name; //
 	std::vector<int>			port; // port(s) d'ecoute du serveur pour ce site (pas de port => conf error)
 	std::string					root; // le dossier physique ou chercher les fichier (si pas error)
 	long long					Max_body_size; // le body size max de la requete client (format : 1024 (octets), 12k ou K (Ko), Mo et Go egalement)
@@ -65,9 +66,9 @@ class Config
 		bool	parseServer(std::vector<std::string> tokens, size_t &start);
 		bool	parseLocation(std::vector<std::string> tokens, size_t &start, Server &server);
 
-		int						getIdServer(int port) const;
-		
-		int						getBestPath(std::string path, int server_id) const;
+		int						getIdServer(std::string hostname,int port) const;
+	
+		int							getBestPath(std::string path, int server_id) const;
 		std::string					getRoot(std::string path, int server_id);
 		long						getMaxBodySize(std::string path, int server_id);
 		bool						isMethodAllowed(std::string path, int server_id, std::string method);
@@ -104,4 +105,5 @@ int 				parse_request(const std::string &request, Request &our_request);
 std::vector<int>	create_multi_srv(const std::vector<int> &all_ports, const int &epoll_fd);
 void				client_send_request(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_request, const int &epoll_fd);
 void				client_get_response(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_requests, const int &epoll_fd, Response &our_request);
+
 #endif

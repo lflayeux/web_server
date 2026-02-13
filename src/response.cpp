@@ -26,8 +26,8 @@ std::string Response::create_header(int content_length)
 	// CHECK FOR REDIRECTIONS OF POST OR DELETE THAT NEEDS A DEFAULT PATH FOR REDIRECTIONS NOT ONLY THE REDIR FROM CONFIG
 	if (error_code_.first > 299 && error_code_.first < 400)
 	{
-		int conf_error_code = getConfErrorCode(get_path_to_send(), getIdServer(get_port()));
-		std::string redirection = getRedirections(get_path_to_send(), getIdServer(get_port()));
+		int conf_error_code = getConfErrorCode(get_path_to_send(), getIdServer(getHostName(), get_port()));
+		std::string redirection = getRedirections(get_path_to_send(), getIdServer(getHostName(),get_port()));
 		if (conf_error_code == error_code_.first && !redirection.empty())
 			header += "Location: " + redirection + "\r\n";
 		else if (error_code_.first == 301)
@@ -75,16 +75,16 @@ std::string Response::format_response()
 std::string Response::create_response()
 {
 	std::string response;
-	int conf_error_code = getConfErrorCode(get_path_to_send(), getIdServer(get_port()));
+	int conf_error_code = getConfErrorCode(get_path_to_send(), getIdServer(getHostName(),get_port()));
 	std::cout << "------------------ CONF ERROR CODE FOR METHOD " << get_method() << " | " << conf_error_code << "\n";
 
-	if(getMaxBodySize(get_path_to_send(), getIdServer(get_port())) < static_cast<long>(get_body().length()))
+	if(getMaxBodySize(get_path_to_send(), getIdServer(getHostName(),get_port())) < static_cast<long>(get_body().length()))
 		set_response_code_message(413);
 	else if (conf_error_code != 200 && (get_path_to_send().find('.') == get_path_to_send().npos || get_method() == "DELETE"))
 		set_response_code_message(conf_error_code);
 	else
 	{
-		if (!isMethodAllowed(get_path_to_send(), getIdServer(get_port()), get_method()))
+		if (!isMethodAllowed(get_path_to_send(), getIdServer(getHostName(),get_port()), get_method()))
 			set_response_code_message(405);			
 		else if(get_method() == "POST")
 			response_POST();

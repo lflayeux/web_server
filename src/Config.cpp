@@ -77,13 +77,13 @@ bool	Config::checkConfig()
 // ======================================
 
 /** **/
-int Config::getIdServer(int port) const
+int Config::getIdServer(std::string hostname, int port) const
 {
 	for (size_t i = 0; i < server_.size(); i++)
 	{
 		for (size_t j = 0; j < server_[i].port.size(); j++)
 		{
-			if (port == server_[i].port[j])
+			if ((hostname == server_[i].server_name || hostname == "localhost") && port == server_[i].port[j])
 				return (i);
 		}
 	}
@@ -652,6 +652,7 @@ bool	Config::parseLocation(std::vector<std::string> tokens, size_t &start, Serve
 void	setDefaultServer(Server &server)
 {
 	server.root = "none";
+	server.server_name = "localhost";
 	server.Max_body_size = 10000;
 }
 
@@ -776,6 +777,27 @@ bool	parseErrorPage(std::vector<std::string> tokens, size_t &i, Server &server)
     return true;
 }
 
+bool	parseName(std::vector<std::string> tokens, size_t &i, Server &server)
+{
+    i++;
+	if (i < tokens.size() && tokens[i] != ";")
+	{
+		server.server_name = tokens[i];
+		i++;
+	}
+	else
+	{
+		std::cerr << BRED "Error: .conf not valid -> missing args for keyword: server_name" RESET << std::endl;
+		return (false);	
+	}
+    if (i >= tokens.size() || tokens[i] != ";")
+	{
+		std::cerr << BRED "Error: .conf not valid -> too many args for keyword: server_name" RESET << std::endl;
+		return (false);
+	}
+    return (true);
+}
+
 bool	Config::parseServer(std::vector<std::string> tokens, size_t &i)
 {
 	Server server;
@@ -788,6 +810,12 @@ bool	Config::parseServer(std::vector<std::string> tokens, size_t &i)
 			if (!parseLocation(tokens, i, server))
 				return (false);
 
+		}
+		else if (tokens[i] == "server_name")
+		{
+			if (!parseName(tokens, i, server))
+				return (false);
+		
 		}
 		else if (tokens[i] == "root")
 		{
@@ -818,7 +846,10 @@ bool	Config::parseServer(std::vector<std::string> tokens, size_t &i)
 			break;
 		}
 		else
+		{
+			std::cerr << BRED "Error: .conf not valid -> unknown args" RESET << std::endl;		
 			return (false);
+		}
 		i++;
 	}
 	server_.push_back(server);
@@ -846,7 +877,6 @@ void	Config::setCgiExtensions()
 	cgi_extensions_.push_back(".py");
 	cgi_extensions_.push_back(".php");
 	cgi_extensions_.push_back(".pl");
-
 }
 
 int Config::load(char *file_path)
@@ -916,7 +946,8 @@ int Config::load(char *file_path)
 	std::cout << std::endl;
 	std::cout << "Best root: " << getRoot("/uploads.html", 0) << std::endl;
 	// std::cout << "cgi_path: " << get_cgi_path() << std::endl;
-	std::cout << "Server Id: " << getIdServer(3030) << std::endl;
+	std::cout << "Server Id: " << getIdServer("example.com", 8080) << std::endl;
+	std::cout << "Server Id: " << getIdServer("example2.com", 8080) << std::endl;
 	std::cout << "MaxBODYSIZE: " << getMaxBodySize("/upload", 0) << std::endl;
 	std::cout << "Server Method: " << isMethodAllowed("/", 0, "GET") << std::endl;
 	std::cout << "Server Index: ";

@@ -9,9 +9,9 @@
 
 void Response::response_POST()
 {
-    std::string upload_location = getUploadLocation(get_path_to_send(), getIdServer(get_port()));
+    std::string upload_location = getUploadLocation(get_path_to_send(), getIdServer(getHostName(),get_port()));
 
-    if(getUploadAllowed(get_path_to_send(), getIdServer(get_port())) == false)
+    if(getUploadAllowed(get_path_to_send(), getIdServer(getHostName(),get_port())) == false)
         set_response_code_message(405);
     else if(!file_exist(upload_location))
         set_response_code_message(404);
