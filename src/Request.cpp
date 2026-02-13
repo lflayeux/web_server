@@ -40,6 +40,11 @@ std::string Request::get_body() const
 	return (this->body_);
 }
 
+std::string	Request::getHostName() const
+{
+	return (this->hostname_);
+}
+
 bool	Request::is_cgi_request() const
 {
 	std::string	path = this->get_path_to_send();
@@ -136,6 +141,11 @@ void Request::set_content_length(const std::string &line)
 void Request::set_port(int port)
 {
     this->port_ = port;
+}
+
+void Request::setHostname(std::string hostname)
+{
+	this->hostname_ = hostname;
 }
 
 void	Request::add_header(const std::string &header, const std::string &value)
