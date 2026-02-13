@@ -55,6 +55,8 @@ int parse_request(const std::string &request, Request &our_request)
                 size_t port_pos = header_value.find(':');
                 if (port_pos != std::string::npos)
                 {
+					our_request.setHostname(header_value.substr(0, port_pos));
+					std::cout << UGREEN << our_request.getHostName();
                     std::string port_str = header_value.substr(port_pos + 1);
 					our_request.set_port(static_cast<int>(std::strtol(port_str.c_str(), NULL, 10)));
                 }

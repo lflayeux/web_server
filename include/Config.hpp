@@ -13,6 +13,8 @@
 # include <climits>
 # include <cstring>
 # include <sys/epoll.h>
+# include <algorithm>
+# include <csignal>
 
 struct Location
 {

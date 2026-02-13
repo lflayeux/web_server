@@ -49,10 +49,12 @@ class Request : public Config
 		void 		set_path(const std::string &path);
 		void 		set_version(const std::string &version);
 		void		set_port(int port);
+		void		setHostname(std::string hostname);
 		void		set_content_length(const std::string &line);
 		void		set_keep_alive(bool status);
 		void		add_header(const std::string &header, const std::string &value);
 		void		add_body(const std::string &body);
+		std::string	getHostName() const;
 	private:
 		int			id_server_;
 		bool		keep_alive_;
@@ -62,6 +64,7 @@ class Request : public Config
 		int			content_length_;
 		std::string	path_to_send_;
 		std::string	body_;
+		std::string	hostname_;
 
 		std::map<std::string, std::string>	headers_;
 };

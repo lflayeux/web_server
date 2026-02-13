@@ -2,7 +2,7 @@ CXX = c++
 PORT = 8080
 CFLAGS = -Wall -Werror -Wextra -g3 -std=c++98
 
-NAME = serv
+NAME = webserv
 
 SRC =	src/get_response.cpp \
 		src/parse_request.cpp \

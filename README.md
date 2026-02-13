@@ -14,6 +14,7 @@ Inspired by the architecture of *Nginx*, this server is capable of handling mult
 | <img src="https://github.com/l-devigne.png" width="40"> | *ldevigne* |[@ldevigne](https://github.com/l-devigne)
 | <img src="https://github.com/lflayeux.png" width="40"> | *lflayeux* |[@lflayeux](https://github.com/lflayeux)
 
+
 ---
 
 ## :hammer_and_wrench: Installation & Usage
@@ -36,7 +37,7 @@ You can **customize** your server by **modifying the .conf** file. Detailed inst
 You can now **launch** your own server:
 
 ```bash
-./serv <path_to_your_conf>
+./webserv <path_to_your_conf>
 ```
 
 ### 4. Test Your Server
@@ -77,7 +78,7 @@ server {
 		# Syntax: listen <port>;
 	}
 	```
-> :warning: **Attention**: If not defined your .conf is invalid.  
+> :warning: **Warning**: If not defined your .conf is invalid.  
 
 - `root` Specifies the base directory used to search for files. While technically optional if every path is covered by a `location`, it is strongly recommended to define a global `root` as a fallback.
 	```nginx
@@ -218,33 +219,23 @@ server {
 
 --- 
 
-### TODO (A supprimer a la fin du projet)
+## :notebook_with_decorative_cover: Handling connections
 
-- [ ] FAIRE LES BRANHCES
-- -> .conf + html.css + parsing .conf
-- -> parsing + parsing .conf
-- -> response + error 404...
+### 1. Understanding the `socket()` function
+The `socket()` function creates a network endpoint (a file descriptor) that acts as a gateway for communication. In our project, it is the foundation that allows a server to wait for and handle client requests.
 
-- [ ] Mettre a jourd le Readme
+The setup process follows a specific order:
 
-**BRANCHE PARSING** _(ldevigne)_
+- Socket Creation: We define how the socket handles communication (e.g., the IP family like IPv4 and the transport protocol, typically TCP).
+- `setsockopt()`: This is used to configure options on the server's socket file descriptor. A common option is SO_REUSEADDR, which allows the server to bind to a port even if it was recently closed, preventing "Address already in use" errors during restarts.
+- Addressing (sockaddr_in): We define the server's identity using structures to specify the `sin_family` (IPv4), `sin_port` (the listening port), and `sin_addr` (the interface IP).
+- `bind()`: This system call associates the socket with the specific IP address and port number defined above.
+- `listen()`: Finally, the socket enters a passive state, waiting for incoming connection attempts ("knocking at the door").
 
-- [ ] Bien comprendre chaque partie de la requete
-- [ ] Garder que ce qui est important
-- [ ] Comment stocker (penser a ce dont on aura besoin lors de la reponse)
-- [ ] Alloc ou non ?
+### 2. Understanding the `epoll()` function
+Once the socket is listening, we need an efficient way to manage multiple connections. This is where `epoll` comes in. `epoll` is an I/O event notification facility. Instead of constantly checking every single connection (polling), `epoll` monitors a set of file descriptors and notifies the server when an "event" occurs (e.g., a new connection is ready to be accepted or data is ready to be read). It uses flags (like `EPOLLIN` or `EPOLLOUT`) to define how we want to be notified of these changes.
 
+### 3. How to handle many servers simultanousely
+We decided to use a `std::vector` to store all the ports defined in our .conf file. We then implemented a `create_multi_serv()` function that takes this vector and the epoll_fd as parameters. This function returns a vector of server socket file descriptors (server_socket_fds).
 
-**BRANCHE RESPONSE** _(aherlaud)_
-- [ ] Une fonction par methode (GET, POST, DELETE)
-- [ ] Comprendre comment gerer les erreurs (404, 501..)
-- [ ] Gestion renvoie requete header (pour l'instant dans les html)
-
-**BRANCHE CONF** _(lflayeux)_
-- [ ] Comprendre comment marche le conf (se referer a nginx)
-- [ ] Comment stocker data .conf
-- [ ] Faire le .conf
-- [ ] Parsing du .conf (voir avec lucas qui fais)
-- [ ] Seconde page html
-
-
+Finally, this vector is used within our main loop to ensure that all server sockets are actively listening and monitored by epoll for incoming connections.

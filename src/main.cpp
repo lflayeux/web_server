@@ -3,7 +3,14 @@
 #include "../include/Response.hpp"
 #include "../include/Config.hpp"
 
-#include <algorithm>
+volatile sig_atomic_t server_running = 1;
+
+void signal_handler(int signum)
+{
+    (void)signum;
+    std::cerr << UYELLOW << "\n[Signal] Interruption reçue. Fermeture propre..." << RESET << std::endl;
+    server_running = 0;
+}
 
 int	main(int ac, char **av)
 {
@@ -12,6 +19,13 @@ int	main(int ac, char **av)
 		std::cerr << BRED "Use: ./serv [ficher .conf]" RESET << std::endl;
 		return (1);
 	}
+	// config du signal
+	struct sigaction sa;
+    sa.sa_handler = signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGINT, &sa, NULL);
+	// end of config
 	Response our_request;
 	if (our_request.load(av[1]) != 0)
 		return (1);
@@ -34,7 +48,7 @@ int	main(int ac, char **av)
 	}
 	
 	epoll_event	srv_events_list[64];
-	while (1)
+	while (server_running)
 	{
 		int nb_events = 0;
 		nb_events = epoll_wait(epoll_fd, srv_events_list, 64, -1);
