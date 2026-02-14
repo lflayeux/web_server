@@ -3,6 +3,65 @@
 #include "../include/Response.hpp"
 #include "../include/Config.hpp"
 
+void handle_file(const std::string &request, Request &our_request)
+{
+	(void) our_request;
+	std::string line;
+	std::istringstream iss(request);
+	std::string			boundary;
+	bool				flag = false;
+
+	while (std::getline(iss, line))
+	{
+		if (!line.empty() && line[line.size() - 1] == '\r')
+			line.erase(line.size() - 1);
+		if (line.find("Content-Type: multipart") != std::string::npos && flag == false)
+		{
+			std::cerr << "file found\n" << std::endl;
+			size_t boundary_pos = line.find("boundary=");
+            if (boundary_pos != std::string::npos)
+			{
+				boundary = line.substr(boundary_pos + 9);
+				std::cerr << "boundary: " << boundary << std::endl;
+				std::getline(iss, line);
+				flag = true;
+			}
+		}
+		else if (line.find(boundary) != std::string::npos && flag == true)
+		{
+			std::cerr << BYELLOW << ">>>>>> " << line << " <<<<<<\n" << RESET;
+			std::getline(iss, line);
+			if (!line.empty() && line[line.size() - 1] == '\r')
+				line.erase(line.size() - 1);
+			std::string value;
+			value = line.substr(line.find("filename=") + 10);
+			value.erase(value.size() - 1);
+			our_request.add_header("filename", value);
+			std::cerr << BYELLOW << ">>>>> " << value << " <<<<<\n" << RESET;
+			break;
+		}
+	}
+	// on cherche le body
+	std::string body_str;
+	while (line != "\r")
+		(std::getline(iss, line));
+	while ((std::getline(iss, line)))
+	{
+		if (line.find(boundary) != std::string::npos)
+		{
+			break;
+		}
+		else
+		{
+			if (line[line.size() - 1] == '\r')
+				line.erase(line.size() - 1);
+			body_str += line + '\n';	
+		}
+	}
+	our_request.add_body(body_str);
+	std::cout << BBLUE << "BODY STR: [" << body_str << "]\n" << RESET;
+}
+
 int parse_request(const std::string &request, Request &our_request)
 {
 	std::string line;
@@ -63,6 +122,13 @@ int parse_request(const std::string &request, Request &our_request)
             }
             else if (header_name == "Content-Length")
 				our_request.set_content_length(header_value);
+			else if (header_name == "Content-Type")
+			{
+				std::cerr << BRED << "Content-Type recieved\n" << RESET;
+				handle_file(request, our_request);
+				std::cout << "Our request is : " << our_request << std::endl;
+				return (0);
+			}
         }
 	}
 	// 3. PARSER LE BODY (tout ce qui reste)

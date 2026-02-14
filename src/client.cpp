@@ -14,7 +14,7 @@ void	client_send_request(const epoll_event *srv_events_list, const int &i, std::
 		full_data.append(buffer);
 	}
 	// Si le client ferme la connexion ou envoie rien
-	if (bytes == 0 || (bytes < 0 && errno != EAGAIN && errno != EWOULDBLOCK))
+	if (bytes == 0 || (bytes < 0 && full_data.empty()))
 	{
 		std::cout << BRED "Client disconnected (empty/closed)" << RESET << std::endl;
 		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
@@ -27,9 +27,9 @@ void	client_send_request(const epoll_event *srv_events_list, const int &i, std::
 		std::cout << "Requête reçue :\n" << full_data << std::endl;
 		pending_requests[srv_events_list[i].data.fd] = full_data;
 		// maintenant qu'on a la requete, on veut écrire la réponse
-		// on passe donc en mode EPOLLOUT
+		// on passe donc en mode EPOLLOUT | EPOLLET
 		epoll_event	ev;
-		ev.events = EPOLLOUT;
+		ev.events = EPOLLOUT | EPOLLET;
 		ev.data.fd = srv_events_list[i].data.fd;
 		epoll_ctl(epoll_fd, EPOLL_CTL_MOD, srv_events_list[i].data.fd, &ev);
 	}

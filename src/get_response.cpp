@@ -2,13 +2,6 @@
 # include "../include/Request.hpp"
 # include "../include/Response.hpp"
 
-// int Response::response_code_GET()
-// {
-//     if(!file_exist(get_path_to_send()))
-// 		  return (404);
-//     return (200);
-// }
-
 void Response::file_behavior()
 {
 	std::string path_to_find = get_path_to_send();

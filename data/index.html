@@ -81,18 +81,18 @@ footer {
         </button>
     </div>
 
-    <div class="card">
-        <h2>Upload de données</h2>
-        <p>Envoyer des données au serveur (POST) :</p>
+	<div class="card">
+        <h2>Upload de fichier</h2>
+        <p>Sélectionnez un fichier à envoyer au serveur (POST) :</p>
         
-        <form action="/uploads" method="POST">
+        <form action="/uploads" method="POST" enctype="multipart/form-data">
             <div class="form-spacer">
-                <input type="text" name="data" placeholder="Entrez un texte" required />
+                <input type="file" name="file_upload" required />
             </div>
 
             <div class="vertical-gap"></div>
             
-            <button type="submit" class="btn-secondary">Upload</button>
+            <button type="submit" class="btn-secondary">Upload le fichier</button>
         </form>
     </div>
 
