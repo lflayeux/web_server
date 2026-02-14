@@ -84,6 +84,7 @@ class Config
 		bool						checkListen();
 		bool						checkUpload();
 		bool						checkRedir();
+		bool						checkPort();
 
 		bool						checkConfig();
 

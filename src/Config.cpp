@@ -37,6 +37,21 @@ bool	Config::checkUpload()
 	return (true);
 }
 
+bool	Config::checkPort()
+{
+	for (size_t i = 0; i < server_.size(); i++)
+	{
+		for (size_t j = 0; j < server_[i].port.size(); j++)
+		{
+			for (size_t n = 0; n < j; n++)
+			{
+				if (server_[i].port[j] == server_[i].port[n])
+					return (false);
+			}
+		}
+	}
+	return (true);
+}
 
 bool	Config::checkListen()
 {
@@ -65,6 +80,11 @@ bool	Config::checkConfig()
 	if (!checkRedir())
 	{	
 		std::cerr << BRED "Error: .conf not valid -> a redirection path is needed for 3xx errors" RESET << std::endl;
+		return (false);
+	}
+	if (!checkPort())
+	{	
+		std::cerr << BRED "Error: .conf not valid -> can't duplicate the same port on the same website" RESET << std::endl;
 		return (false);
 	}
 	return (true);
@@ -193,6 +213,7 @@ bool Config::isMethodAllowed(std::string path, int server_id, std::string method
 			if (server_[server_id].location[i].method[n] == method)
 				return (true);
 		}
+		std::cout << UGREEN << "coucou la team\n"<< RESET;
 		return (false);
 	}
 	return (true);

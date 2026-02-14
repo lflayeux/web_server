@@ -3,7 +3,12 @@
 #include "../include/Response.hpp"
 #include "../include/Config.hpp"
 
-void handle_file(const std::string &request, Request &our_request)
+// void handle_content_type(const std::string &request, Request &our_request)
+// {
+
+// }
+
+void handle_multipart(const std::string &request, Request &our_request)
 {
 	(void) our_request;
 	std::string line;
@@ -106,7 +111,7 @@ int parse_request(const std::string &request, Request &our_request)
             
             // Stocker
             our_request.add_header(header_name, header_value);
-            
+            std::cout << BYELLOW << "header IS :" << header_name << std::endl << RESET;
             // Parser les headers importants
             if (header_name == "Host")
             {
@@ -120,14 +125,19 @@ int parse_request(const std::string &request, Request &our_request)
 					our_request.set_port(static_cast<int>(std::strtol(port_str.c_str(), NULL, 10)));
                 }
             }
-            else if (header_name == "Content-Length")
+            if (header_name == "Content-Length")
 				our_request.set_content_length(header_value);
-			else if (header_name == "Content-Type")
+			if (header_name == "Content-Type")
 			{
 				std::cerr << BRED << "Content-Type recieved\n" << RESET;
-				handle_file(request, our_request);
+				if (header_value.find("multipart") != std::string::npos)
+				{
+					handle_multipart(request, our_request);
+					return (0);
+				}
+				// else
+				// 	handle_content_type(request, our_request);
 				std::cout << "Our request is : " << our_request << std::endl;
-				return (0);
 			}
         }
 	}

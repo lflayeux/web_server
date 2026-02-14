@@ -95,46 +95,8 @@ void	Request::set_keep_alive(bool status)
 
 void Request::set_content_length(const std::string &line)
 {
-    size_t pos_sep = line.find(':');
-    if (pos_sep == std::string::npos)
-    {
-        this->content_length_ = 0;
-        return;
-    }
-
-    // Récupère tout ce qu'il y a après ':'
-    std::string value_str = line.substr(pos_sep + 1);
-
-    // Trim espaces et \r
-    size_t start = value_str.find_first_not_of(" \t\r");
-    
-    if (start == std::string::npos)
-    {
-        // La ligne ne contient que des espaces après ':'
-        this->content_length_ = 0;
-        return;
-    }
-    
-    size_t end = value_str.find_last_not_of(" \t\r");
-    
-    value_str = value_str.substr(start, end - start + 1);
-
-    // Conversion manuelle string -> int
-    int value = 0;
-    for (size_t i = 0; i < value_str.length(); ++i)
-    {
-        if (value_str[i] < '0' || value_str[i] > '9')
-        {
-            this->content_length_ = 0;
-            return;
-        }
-        value = value * 10 + (value_str[i] - '0');
-    }
-
-    this->content_length_ = value;
-
-    std::cout << "Le content length demandé est : "
-              << this->content_length_ << std::endl;
+	std::cout << BBLUE << "atoi -> " << atoi(line.c_str()) << RESET << std::endl;
+	this->content_length_ = atoi(line.c_str());
 }
 
 

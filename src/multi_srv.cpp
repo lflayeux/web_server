@@ -9,8 +9,22 @@ std::vector<int>	create_multi_srv(const std::vector<int> &all_ports, const int &
 {
 	std::vector<int>	server_socket_fds;
 	sockaddr_in			srv;
+	bool				flag = false;
 	for (size_t i = 0; i < all_ports.size(); i++)
 	{
+		for (size_t j = 0; j < i; j++)
+		{
+			if (all_ports[j] == all_ports[i])
+			{
+				std::cout << BGREEN << all_ports[i] << RESET << std::endl;
+				flag = true;
+			}
+		}
+		if (flag)
+		{
+			flag = false;
+			continue;
+		}
 		server_socket_fds.push_back(socket(AF_INET, SOCK_STREAM, 0));
 		if (server_socket_fds.back() < 0)
 		{
