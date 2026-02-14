@@ -160,7 +160,7 @@ void    Request::add_body(const std::string &body)
     if (body.compare(0, prefix.size(), prefix) == 0)
     {
         this->body_ = body.substr(prefix.size());
-        return;
+        return ;
     }
     this->body_ = body;
 }

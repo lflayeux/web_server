@@ -21,12 +21,18 @@ void Response::response_POST()
         set_response_code_message(302);
 
 
-    std::cout << "frffffffffffffffffffffffffffff ERROR CODE: " << upload_location << std::endl;
-    std::cout << "frffffffffffffffffffffffffffff ERROR CODE: " << error_code_.first << std::endl;
+    std::cout << "fffffffffffffffffffffffffffff ERROR CODE: " << upload_location << std::endl;
+    std::cout << "fffffffffffffffffffffffffffff ERROR CODE: " << error_code_.first << std::endl;
     if (error_code_.first == 302)
     {
-        std::ofstream index_fd(upload_location.c_str() , std::ios::app);
+		std::string file_location;
+		if (upload_location[upload_location.size() - 1] != '/')
+			upload_location += "/";
+		file_location = upload_location + get_headers()["filename"];
+		std::cout << GREEN << "upload loc: " << file_location << RESET << std::endl;
+        std::ofstream index_fd(file_location.c_str());
         index_fd << get_body() + "\n";
+		// créer un fichier puis le remplir
     }
 }
 

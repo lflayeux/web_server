@@ -66,7 +66,7 @@ int	main(int ac, char **av)
 				fcntl(client_fd, F_SETFL, flags | O_NONBLOCK);
 				// Add client_fd to epoll (important!)
 				epoll_event ev;
-				ev.events = EPOLLIN;      // listen for read events
+				ev.events = EPOLLIN | EPOLLET;      // listen for read events
 				ev.data.fd = client_fd;
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0)
 					std::cerr << "Failed to add client fd to epoll\n";
@@ -74,7 +74,7 @@ int	main(int ac, char **av)
 			else	// client
 			{
 				// ETAPE 1 = le client evoie sa requete
-				if (srv_events_list[i].events & EPOLLIN)	// le client envoie sa requete
+				if (srv_events_list[i].events & EPOLLIN)// le client envoie sa requete
 					client_send_request(srv_events_list, i, pending_requests, epoll_fd);
 				// ETAPE 2 = on peut maintenant envoyer la reponse
 				else if (srv_events_list[i].events & EPOLLOUT)

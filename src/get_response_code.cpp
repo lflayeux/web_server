@@ -10,9 +10,17 @@ bool file_exist(const std::string &file_path)
 
 bool is_allowed_file(const std::string &file_name)
 {
-    if(file_name.find("data/uploads/") != file_name.npos)
-		return true;
-	return false;
+    if(file_name =="/")
+		return false;
+	if(file_name.find("src") != file_name.npos)
+		return false;
+    if(file_name.find("include") != file_name.npos)
+		return false;
+	if(file_name.find("www/cgi-bin") != file_name.npos)
+		return false;
+	if(file_name.find("build") != file_name.npos)
+		return false;
+	return true;
 }
 
 void Response::set_response_code_message(int code)
