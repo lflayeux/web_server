@@ -1,5 +1,6 @@
 # include "../include/Response.hpp"
 # include "../include/Request.hpp"
+#include <sys/stat.h>
 
 bool file_exist(const std::string &file_path)
 {
@@ -7,6 +8,17 @@ bool file_exist(const std::string &file_path)
 		return true;
 	return false;
 }
+
+bool dir_exist(const std::string &file_path)
+{
+	std::cerr << BRED << "caca\n" << RESET;
+    struct stat info;
+    if (stat(file_path.c_str(), &info) != 0)
+        return false;
+
+    return (info.st_mode & S_IFDIR) != 0;
+}
+
 
 bool is_allowed_file(const std::string &file_name)
 {
@@ -16,7 +28,7 @@ bool is_allowed_file(const std::string &file_name)
 		return false;
     if(file_name.find("include") != file_name.npos)
 		return false;
-	if(file_name.find("www/cgi-bin") != file_name.npos)
+	if(file_name.find("cgi-bin") != file_name.npos)
 		return false;
 	if(file_name.find("build") != file_name.npos)
 		return false;

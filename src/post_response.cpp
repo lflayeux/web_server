@@ -13,7 +13,7 @@ void Response::response_POST()
 
     if(getUploadAllowed(get_path_to_send(), getIdServer(getHostName(),get_port())) == false)
         set_response_code_message(405);
-    else if(!file_exist(upload_location))
+    else if(!dir_exist(upload_location))
         set_response_code_message(404);
     else if (!is_allowed_file(upload_location))
         set_response_code_message(403);

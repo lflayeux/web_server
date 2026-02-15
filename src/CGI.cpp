@@ -117,7 +117,7 @@ std::string	CGI::execute()
 	build_environnement();
 	convert_map_to_envp();
 
-	std::cout << BGREEN << "Debug CGI, execute() starts\n" << RESET;
+	std::cout << UGREEN << "CGI -> execute() starts\n" << RESET;
 	/* On crée des pipes pour stdin et stdout */
 	int	pipe_in[2];// pour envoyer le body
 	int	pipe_out[2];// pour recevoir la réponse
@@ -155,11 +155,10 @@ std::string	CGI::execute()
 		av[0] = const_cast<char *>(script_path.c_str());
 		av[1] = const_cast<char *>(tmp.c_str());
 		av[2] = NULL;
-		
-		std::cerr << BGREEN << "Debug : just before EXECVE - script_path:" << tmp << RESET << std::endl;
+
 		execve(av[0], av, envp_);
 
-		std::cerr << "execve failed: " << strerror(errno) << std::endl;
+		std::cerr << BRED << "execve failed: " << strerror(errno) << RESET << std::endl;
 		exit(1);
 	}
 	else// processus parent

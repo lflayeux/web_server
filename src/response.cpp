@@ -33,7 +33,7 @@ std::string Response::create_header(int content_length)
 		else if (error_code_.first == 301)
 			header += "Location: " + get_path_to_send() + "/" + "\r\n";
 		else
-			header += "Location: /uploads.html\r\n";
+			header += "Location: default_pages/uploads.html\r\n";
 	}
 	header += "Content-Type: text/html\r\n";
 	std::cout << "/t/t/tFILE TO SEND IS : " << get_path_to_send().c_str() << std::endl;

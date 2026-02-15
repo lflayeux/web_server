@@ -40,6 +40,7 @@ public:
 };
 
 bool file_exist(const std::string &file_path);
+bool dir_exist(const std::string &file_path);
 bool is_allowed_file(const std::string &file_name);
 
 

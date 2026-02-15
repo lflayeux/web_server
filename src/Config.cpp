@@ -213,7 +213,6 @@ bool Config::isMethodAllowed(std::string path, int server_id, std::string method
 			if (server_[server_id].location[i].method[n] == method)
 				return (true);
 		}
-		std::cout << UGREEN << "coucou la team\n"<< RESET;
 		return (false);
 	}
 	return (true);
