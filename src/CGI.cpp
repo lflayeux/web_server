@@ -148,11 +148,15 @@ std::string	CGI::execute()
     	std::cerr << "DEBUG: File exists? " << (access(script_path.c_str(), F_OK) == 0 ? "YES" : "NO") << std::endl;
     	std::cerr << "DEBUG: File executable? " << (access(script_path.c_str(), X_OK) == 0 ? "YES" : "NO") << std::endl;
 		
-		
+
+		std::string pathToFind = our_response_.get_path_to_send();
+		std::string tmp = our_response_.getRoot(pathToFind, our_response_.getIdServer(our_response_.getHostName(), our_response_.get_port())) + our_response_.get_path_to_send();
+		std::cerr << UCYAN << "tmp : " << tmp << std::endl;
 		av[0] = const_cast<char *>(script_path.c_str());
-		av[1] = NULL;
+		av[1] = const_cast<char *>(tmp.c_str());
+		av[2] = NULL;
 		
-		std::cerr << BGREEN << "Debug : just before EXECVE - script_path:" << script_path << RESET << std::endl;
+		std::cerr << BGREEN << "Debug : just before EXECVE - script_path:" << tmp << RESET << std::endl;
 		execve(av[0], av, envp_);
 
 		std::cerr << "execve failed: " << strerror(errno) << std::endl;

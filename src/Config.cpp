@@ -138,7 +138,7 @@ int		Config::getBestPath(std::string path, int server_id) const
     return (id);
 }
 
-std::string Config::getRoot(std::string path, int server_id)
+std::string Config::getRoot(std::string path, int server_id) const
 {
 	std::string best_root = server_[server_id].root;
 	int i = getBestPath(path, server_id); 

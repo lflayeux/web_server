@@ -69,7 +69,7 @@ class Config
 		int						getIdServer(std::string hostname,int port) const;
 	
 		int							getBestPath(std::string path, int server_id) const;
-		std::string					getRoot(std::string path, int server_id);
+		std::string					getRoot(std::string path, int server_id) const;
 		long						getMaxBodySize(std::string path, int server_id);
 		bool						isMethodAllowed(std::string path, int server_id, std::string method);
 		std::vector<std::string>	getIndex(std::string path, int server_id);

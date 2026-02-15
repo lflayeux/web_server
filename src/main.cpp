@@ -44,7 +44,8 @@ int	main(int ac, char **av)
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cerr << BRED << "Impossible to create multi srv [check if not already launched]" << RESET << std::endl;
+		return (1);
 	}
 	
 	epoll_event	srv_events_list[64];

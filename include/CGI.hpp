@@ -4,7 +4,7 @@
 # include "../include/Request.hpp"
 # include "../include/Response.hpp"
 
-class	CGI : public Config
+class	CGI
 {
 	protected:
 		std::map<std::string, std::string>	environnement_;
