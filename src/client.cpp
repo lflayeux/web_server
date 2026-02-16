@@ -16,7 +16,7 @@ void	client_send_request(const epoll_event *srv_events_list, const int &i, std::
 	// Si le client ferme la connexion ou envoie rien
 	if (bytes == 0 || (bytes < 0 && full_data.empty()))
 	{
-		std::cout << BRED "Client disconnected (empty/closed)" << RESET << std::endl;
+		std::cout << BMAGENTA "Client disconnected (empty/closed)" << RESET << std::endl;
 		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
 		close(srv_events_list[i].data.fd);
 		pending_requests.erase(srv_events_list[i].data.fd);
@@ -24,7 +24,7 @@ void	client_send_request(const epoll_event *srv_events_list, const int &i, std::
 	}
 	if (full_data.find("\r\n\r\n") != std::string::npos)
 	{
-		std::cout << "Requête reçue :\n" << full_data << std::endl;
+		std::cout << BMAGENTA << "Request recieved :\n" << BYELLOW << full_data << RESET << std::endl;
 		pending_requests[srv_events_list[i].data.fd] = full_data;
 		// maintenant qu'on a la requete, on veut écrire la réponse
 		// on passe donc en mode EPOLLOUT | EPOLLET
@@ -40,11 +40,13 @@ void	client_get_response(const epoll_event *srv_events_list, const int &i, std::
 	/* On a une string en arg, on veut la parser et la traiter */
 	if (parse_request(pending_requests[srv_events_list[i].data.fd], our_request) != 0)
 		std::cerr << "Error with handling request\n";// + envoyer code erreur
-	std::cout << BMAGENTA "Envoi de la réponse..." << RESET << std::endl;
+	std::cout << BMAGENTA "Sending response..." << RESET << std::endl;
 	std::string	reponse;
-	if (our_request.is_cgi_request())
+	std::string pathToFind = our_request.get_path_to_send();
+	std::string tmp = our_request.getRoot(pathToFind, our_request.getIdServer(our_request.getHostName(), our_request.get_port())) + our_request.get_path_to_send();
+	if (our_request.is_cgi_request() && !access(tmp.c_str(), F_OK | R_OK))
 	{
-		std::cout << BGREEN << "Il s'agit d'un CGI\n" << RESET;
+		std::cout << BMAGENTA << "Dealing with CGI\n" << RESET;
 		CGI	my_cgi(our_request);
 		try
 		{
@@ -58,7 +60,7 @@ void	client_get_response(const epoll_event *srv_events_list, const int &i, std::
 	}
 	else
 	{
-		std::cout << BGREEN << "Il s'agit d'une requête standard\n" << RESET;
+		std::cout << BMAGENTA<< "Dealing with standard request\n" << RESET;
 		reponse = our_request.create_response();
 	}
 	// Générer la réponse (on devrait la stocker aussi dans un container)
@@ -67,6 +69,6 @@ void	client_get_response(const epoll_event *srv_events_list, const int &i, std::
 	// On a fini avec ce client
 	epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
 	close(srv_events_list[i].data.fd);
+	std::cout << BMAGENTA "Disconnected client: id[" << srv_events_list[i].data.fd << "]" << RESET << std::endl;
 	pending_requests.erase(srv_events_list[i].data.fd);
-	std::cout << BRED "Client déconnecté" << RESET << std::endl;
 }

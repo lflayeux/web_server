@@ -5,7 +5,6 @@
 void Response::file_behavior()
 {
 	std::string path_to_find = get_path_to_send();
-	// std::cout << BRED "------------------- PATH TO FIND : " << path_to_find << std::endl;
 	std::string root_dir  = getRoot(path_to_find, getIdServer(getHostName(), get_port()));
 	std::string full_path  = root_dir + path_to_find;
 	if (!file_exist(full_path))
@@ -39,7 +38,6 @@ void Response::directory_behavior()
 			}
 		}
 	}
-	// std::cout << BRED "------------------- TEST" << std::endl;
 	if(file_exist(default_path))
 	{
 		set_response_code_message(200);
@@ -47,7 +45,6 @@ void Response::directory_behavior()
 	}
 	else if (getAutoIndex(path_to_find, getIdServer(getHostName(),get_port())) == true)
 	{
-		std::cout << BRED "------------------- PATH TO FIND X : " << full_path << std::endl;
 		if(create_autoindex_page(full_path) == false)
 			set_response_code_message(404);
 		else		
@@ -64,12 +61,10 @@ void Response::response_GET()
 	{
 		
 		directory_behavior();
-		std::cout << BRED "------------------- PATH TO PRINT DIR : " << get_path_to_send() << std::endl;
 	}
 	else
 	{
 		file_behavior();
-		std::cout << BRED "------------------- PATH TO PRINT FILE : " << get_path_to_send() << std::endl;
 	}
 	// NEED TO CHECK AUTOINDEX AFTERWARDS
 }

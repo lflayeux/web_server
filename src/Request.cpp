@@ -56,10 +56,8 @@ bool	Request::is_cgi_request() const
 		
 	std::vector<std::string> cgi_extensions = this->get_cgi_extensions();
 		
-	std::cout << UYELLOW << "still inside is_cgi_request() | cgi_extensions.size = "  << cgi_extensions.size() << RESET << std::endl;
 	for (size_t i = 0; i < cgi_extensions.size(); ++i)
 	{
-		std::cout << UYELLOW << "ext: [" << extension << "] | vs ext[" << i << "][" << cgi_extensions[i] << "]\n" << RESET;
 		if (extension == cgi_extensions[i])
 			return (true);
 	}
@@ -95,7 +93,6 @@ void	Request::set_keep_alive(bool status)
 
 void Request::set_content_length(const std::string &line)
 {
-	std::cout << BBLUE << "atoi -> " << atoi(line.c_str()) << RESET << std::endl;
 	this->content_length_ = atoi(line.c_str());
 }
 

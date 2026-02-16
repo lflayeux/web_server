@@ -11,7 +11,6 @@ bool file_exist(const std::string &file_path)
 
 bool dir_exist(const std::string &file_path)
 {
-	std::cerr << BRED << "caca\n" << RESET;
     struct stat info;
     if (stat(file_path.c_str(), &info) != 0)
         return false;

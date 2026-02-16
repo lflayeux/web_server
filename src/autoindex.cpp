@@ -14,7 +14,6 @@ std::string create_page(std::vector<std::pair<std::string, int> > file_list)
         autoindex_html += "<a href=\"" + name + "\">" + name + "</a>\r\n";
     }
     autoindex_html += "</pre>\r\n<hr>\r\n</body>\r\n</html>";
-    std::cout << "-------------AUTOINDEX:\n" << autoindex_html << std::endl;
     return autoindex_html;
 }
 
@@ -33,7 +32,6 @@ bool Response::create_autoindex_page(const std::string &path_to_index)
         file_list.push_back(std::make_pair(file_name, file_type));
         file = readdir(dir);
     }
-    std::cout << "-------------LETSGOOOOOOOOOOOOOOOOOOOO\n" << std::endl;
 
     autoindex_ = create_page(file_list);
     return true;

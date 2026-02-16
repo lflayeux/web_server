@@ -11,7 +11,7 @@ print("<html>")
 print("<head><title>CGI Test</title></head>")
 print("<body>")
 print("<h1>CGI fonctionne !</h1>")
-print("<p>Méthode: {}</p>".format(os.environ.get('REQUEST_METHOD', 'N/A')))
+print("<p>Methode: {}</p>".format(os.environ.get('REQUEST_METHOD', 'N/A')))
 print("<p>Path: {}</p>".format(os.environ.get('PATH_INFO', 'N/A')))
 print("<p>Query: {}</p>".format(os.environ.get('QUERY_STRING', 'N/A')))
 

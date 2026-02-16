@@ -36,15 +36,13 @@ std::string Response::create_header(int content_length)
 			header += "Location: default_pages/uploads.html\r\n";
 	}
 	header += "Content-Type: text/html\r\n";
-	std::cout << "/t/t/tFILE TO SEND IS : " << get_path_to_send().c_str() << std::endl;
 	ss << content_length;
 	std::string content_len = ss.str();
 	header = header + "Content-Length: " + content_len;
 	header += "\r\n\r\n";
 
 
-	std::cout << "/t/t/tMETHOD IS : " << get_method() << std::endl;
-	std::cout << "/t/t/tHEADER IS : " << header << std::endl;
+	std::cout << BRED << "[Header(s) bellow]\n" << header << RESET << std::endl;
 	return (header);
 }
 
@@ -76,10 +74,8 @@ std::string Response::create_response()
 {
 	std::string response;
 	int conf_error_code = getConfErrorCode(get_path_to_send(), getIdServer(getHostName(),get_port()));
-	std::cout << "------------------ CONF ERROR CODE FOR METHOD " << get_method() << " | " << conf_error_code << "\n";
 
 	long	MBS = getMaxBodySize(get_path_to_send(), getIdServer(getHostName(),get_port()));
-	std::cout << BRED << "MBS: " << MBS << "BL: " << get_body().length() << std::endl;
 	if(MBS < static_cast<long>(get_body().length()))
 		set_response_code_message(413);
 	else if (conf_error_code != 200 && (get_path_to_send().find('.') == get_path_to_send().npos || get_method() == "DELETE"))
@@ -98,6 +94,7 @@ std::string Response::create_response()
 	
 	path_to_error();
 
+	std::cout << BMAGENTA << "\tResponse :" << RESET << std::endl;
 	response = format_response();
 
     return response;

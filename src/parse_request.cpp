@@ -22,19 +22,16 @@ void handle_multipart(const std::string &request, Request &our_request)
 			line.erase(line.size() - 1);
 		if (line.find("Content-Type: multipart") != std::string::npos && flag == false)
 		{
-			std::cerr << "file found\n" << std::endl;
 			size_t boundary_pos = line.find("boundary=");
             if (boundary_pos != std::string::npos)
 			{
 				boundary = line.substr(boundary_pos + 9);
-				std::cerr << "boundary: " << boundary << std::endl;
 				std::getline(iss, line);
 				flag = true;
 			}
 		}
 		else if (line.find(boundary) != std::string::npos && flag == true)
 		{
-			std::cerr << BYELLOW << ">>>>>> " << line << " <<<<<<\n" << RESET;
 			std::getline(iss, line);
 			if (!line.empty() && line[line.size() - 1] == '\r')
 				line.erase(line.size() - 1);
@@ -42,7 +39,7 @@ void handle_multipart(const std::string &request, Request &our_request)
 			value = line.substr(line.find("filename=") + 10);
 			value.erase(value.size() - 1);
 			our_request.add_header("filename", value);
-			std::cerr << BYELLOW << ">>>>> " << value << " <<<<<\n" << RESET;
+			std::cerr << BYELLOW << "Filename to upload > " << value << " <\n" << RESET;
 			break;
 		}
 	}
@@ -64,7 +61,7 @@ void handle_multipart(const std::string &request, Request &our_request)
 		}
 	}
 	our_request.add_body(body_str);
-	std::cout << BBLUE << "BODY STR: [" << body_str << "]\n" << RESET;
+	std::cout << BBLUE << "Body content: [" << body_str << "]\n" << RESET;
 }
 
 int parse_request(const std::string &request, Request &our_request)
@@ -95,7 +92,6 @@ int parse_request(const std::string &request, Request &our_request)
 			line.erase(line.size() - 1);
 		if (line.empty())
 			break;
-		std::cout << "<line> ["<< line << "]" << std::endl;
 
 		// pour split "Header: Value"
         size_t colon_pos = line.find(':');
@@ -111,7 +107,6 @@ int parse_request(const std::string &request, Request &our_request)
             
             // Stocker
             our_request.add_header(header_name, header_value);
-            std::cout << BYELLOW << "header IS :" << header_name << std::endl << RESET;
             // Parser les headers importants
             if (header_name == "Host")
             {
@@ -120,7 +115,6 @@ int parse_request(const std::string &request, Request &our_request)
                 if (port_pos != std::string::npos)
                 {
 					our_request.setHostname(header_value.substr(0, port_pos));
-					std::cout << UGREEN << our_request.getHostName();
                     std::string port_str = header_value.substr(port_pos + 1);
 					our_request.set_port(static_cast<int>(std::strtol(port_str.c_str(), NULL, 10)));
                 }
@@ -129,15 +123,11 @@ int parse_request(const std::string &request, Request &our_request)
 				our_request.set_content_length(header_value);
 			if (header_name == "Content-Type")
 			{
-				std::cerr << BRED << "Content-Type recieved\n" << RESET;
 				if (header_value.find("multipart") != std::string::npos)
 				{
 					handle_multipart(request, our_request);
 					return (0);
 				}
-				// else
-				// 	handle_content_type(request, our_request);
-				std::cout << "Our request is : " << our_request << std::endl;
 			}
         }
 	}
@@ -151,6 +141,5 @@ int parse_request(const std::string &request, Request &our_request)
 			body += "\n";
 	}
 	our_request.add_body(body);
-	std::cout << "Our request is : " << our_request << std::endl;
 	return 0;
 }

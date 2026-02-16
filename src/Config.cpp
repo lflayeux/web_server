@@ -120,11 +120,6 @@ int		Config::getBestPath(std::string path, int server_id) const
         const std::string& loc_path = server_[server_id].location[i].path;
 		if (path.find(loc_path) == 0)
         {
-            // if (loc_path.size() > longest_match)
-            // {
-            //     longest_match = loc_path.size();
-            //     id = i;
-            // }
         	if (path.size() == loc_path.size() || loc_path[loc_path.size() - 1] == '/' || path[loc_path.size()] == '/') 
             {
                 if (loc_path.size() > longest_match)
@@ -293,8 +288,6 @@ std::vector<std::string>	tokenize(std::string input)
 	while (content >> token)
 		tokens.push_back(token);
 
-	// for (size_t i = 0; i < tokens.size(); i++)
-	// 	std::cout << tokens[i] << std::endl;
 	return tokens;
 }
 
@@ -895,8 +888,6 @@ bool Config::parseMain(std::vector<std::string> tokens, size_t i)
 void	Config::setCgiExtensions()
 {
 	cgi_extensions_.push_back(".py");
-	cgi_extensions_.push_back(".php");
-	cgi_extensions_.push_back(".pl");
 }
 
 int Config::load(char *file_path)
@@ -931,59 +922,60 @@ int Config::load(char *file_path)
 	// ======================
 	// = PRINT SERVERS TEST =
 	// ======================
-	for (size_t i = 0; i < server_.size(); i++)
-	{
+	// for (size_t i = 0; i < server_.size(); i++)
+	// {
 
-		std::cout << BMAGENTA "SERVER "  << i + 1 <<  RESET << std::endl;
-		for (size_t n = 0; n < server_[i].port.size(); n++)
-		{
-			std::cout << "PORT ==> " << server_[i].port[n] << std::endl;
-		}
-		std::cout << "MAX_BODY_SIZE ==> " << server_[i].Max_body_size << std::endl;
-		std::cout << "ROOT ==> " << server_[i].root << std::endl;
+	// 	std::cout << BMAGENTA "SERVER "  << i + 1 <<  RESET << std::endl;
+	// 	for (size_t n = 0; n < server_[i].port.size(); n++)
+	// 	{
+	// 		std::cout << "PORT ==> " << server_[i].port[n] << std::endl;
+	// 	}
+	// 	std::cout << "MAX_BODY_SIZE ==> " << server_[i].Max_body_size << std::endl;
+	// 	std::cout << "ROOT ==> " << server_[i].root << std::endl;
 
-		std::cout << BMAGENTA "ERROR PAGES:" RESET << std::endl;
-		for (std::map<int, std::string>::iterator it = server_[i].error_pages.begin(); it != server_[i].error_pages.end(); ++it) 
-		{
-		    std::cout << "  Code [" << it->first << "] => Path: " << it->second << std::endl;
-		}
-		for (size_t j = 0; j < server_[i].location.size(); j++)
-		{
-			std::cout << BCYAN "LOCATIONS "  << j + 1 <<  RESET << std::endl;
+	// 	std::cout << BMAGENTA "ERROR PAGES:" RESET << std::endl;
+	// 	for (std::map<int, std::string>::iterator it = server_[i].error_pages.begin(); it != server_[i].error_pages.end(); ++it) 
+	// 	{
+	// 	    std::cout << "  Code [" << it->first << "] => Path: " << it->second << std::endl;
+	// 	}
+	// 	for (size_t j = 0; j < server_[i].location.size(); j++)
+	// 	{
+	// 		std::cout << BCYAN "LOCATIONS "  << j + 1 <<  RESET << std::endl;
 
-			std::cout << "PATH ==> " << server_[i].location[j].path << std::endl;
-			std::cout << "ROOT ==> " << server_[i].location[j].root << std::endl;
-			std::cout << "AUTOINDEX ==> " << server_[i].location[j].autoindex << std::endl;
-			std::cout << "ERROR_CODE ==> " << server_[i].location[j].conf_error_code << std::endl;
-			std::cout << "REDIRECTIONS ==> " << server_[i].location[j].redirections << std::endl;
-			std::cout << "UPLOAD_ALLOWED ==> " << server_[i].location[j].upload_allowed << std::endl;
-			std::cout << "UPLOAD_LOCATIONS ==> " << server_[i].location[j].upload_location << std::endl;
-			std::cout << "MAX_BODY_SIZE ==> " << server_[i].location[j].Max_body_size << std::endl;
-		}
-	}
+	// 		std::cout << "PATH ==> " << server_[i].location[j].path << std::endl;
+	// 		std::cout << "ROOT ==> " << server_[i].location[j].root << std::endl;
+	// 		std::cout << "AUTOINDEX ==> " << server_[i].location[j].autoindex << std::endl;
+	// 		std::cout << "ERROR_CODE ==> " << server_[i].location[j].conf_error_code << std::endl;
+	// 		std::cout << "REDIRECTIONS ==> " << server_[i].location[j].redirections << std::endl;
+	// 		std::cout << "UPLOAD_ALLOWED ==> " << server_[i].location[j].upload_allowed << std::endl;
+	// 		std::cout << "UPLOAD_LOCATIONS ==> " << server_[i].location[j].upload_location << std::endl;
+	// 		std::cout << "MAX_BODY_SIZE ==> " << server_[i].location[j].Max_body_size << std::endl;
+	// 	}
+	// }
 
-	std::cout << std::endl;
-	std::cout << std::endl;
-	std::cout << "Best root: " << getRoot("/uploads.html", 0) << std::endl;
-	// std::cout << "cgi_path: " << get_cgi_path() << std::endl;
-	std::cout << "Server Id: " << getIdServer("example.com", 8080) << std::endl;
-	std::cout << "Server Id: " << getIdServer("example2.com", 8080) << std::endl;
-	std::cout << "MaxBODYSIZE: " << getMaxBodySize("/upload", 0) << std::endl;
-	std::cout << "Server Method: " << isMethodAllowed("/", 0, "GET") << std::endl;
-	std::cout << "Server Index: ";
-	std::vector<std::string> indexs = getIndex("kdkdkd", 0);
-	for (size_t n = 0; n < indexs.size(); n++)
-	{
-		std::cout << " " << indexs[n];
-	}
-	std::cout << std::endl;
-	std::cout << "Server AutoIndex: " << getAutoIndex("/", 0) << std::endl;
-	std::cout << "Server Conf_error_code: " << getConfErrorCode("/uploads/lolololo", 0) << std::endl;
+	// std::cout << std::endl;
+	// std::cout << std::endl;
+	// std::cout << "Best root: " << getRoot("/uploads.html", 0) << std::endl;
+	// // std::cout << "cgi_path: " << get_cgi_path() << std::endl;
+	// std::cout << "Server Id: " << getIdServer("example.com", 8080) << std::endl;
+	// std::cout << "Server Id: " << getIdServer("example2.com", 8080) << std::endl;
+	// std::cout << "MaxBODYSIZE: " << getMaxBodySize("/upload", 0) << std::endl;
+	// std::cout << "Server Method: " << isMethodAllowed("/", 0, "GET") << std::endl;
+	// std::cout << "Server Index: ";
+	// std::vector<std::string> indexs = getIndex("kdkdkd", 0);
+	// for (size_t n = 0; n < indexs.size(); n++)
+	// {
+	// 	std::cout << " " << indexs[n];
+	// }
+	// std::cout << std::endl;
+	// std::cout << "Server AutoIndex: " << getAutoIndex("/", 0) << std::endl;
+	// std::cout << "Server Conf_error_code: " << getConfErrorCode("/uploads/lolololo", 0) << std::endl;
 
 
-	std::cout << "Server Upload Allowed: " << getUploadAllowed("/size", 0) << std::endl;
-	std::cout << "Server Upload Location: " << getUploadLocation("/uploads", 0) << std::endl;
-	std::cout << "Server Error_page: " << getErrorPage(200, 0) << std::endl;
+	// std::cout << "Server Upload Allowed: " << getUploadAllowed("/size", 0) << std::endl;
+	// std::cout << "Server Upload Location: " << getUploadLocation("/uploads", 0) << std::endl;
+	// std::cout << "Server Error_page: " << getErrorPage(200, 0) << std::endl;
+	
 	setCgiExtensions();
 	return 0;
 }

@@ -4,14 +4,16 @@
 # include "../include/Request.hpp"
 # include "../include/Response.hpp"
 
-class	CGI
+class Response;
+
+class	CGI : public Response
 {
 	protected:
 		std::map<std::string, std::string>	environnement_;
 		char			**envp_;/* needed for excve() part*/
-		const Response	&our_response_;
+		Response	&our_response_;
 	public:
-		CGI(const Response &response) : envp_(NULL), our_response_(response) {};
+		CGI(Response &response) : envp_(NULL), our_response_(response) {};
 		~CGI();
 		void		build_environnement();
 		void		convert_map_to_envp();

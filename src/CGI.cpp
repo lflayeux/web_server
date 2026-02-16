@@ -1,5 +1,6 @@
 # include "../include/CGI.hpp"
 
+
 static std::string	get_a_string(int value)
 {
     std::ostringstream	oss;
@@ -143,15 +144,10 @@ std::string	CGI::execute()
 
 		char *av[2];
 		std::string	script_path = get_script_path();
-		// DEBUG
-   		std::cerr << "DEBUG: Script path = [" << script_path << "]" << std::endl;
-    	std::cerr << "DEBUG: File exists? " << (access(script_path.c_str(), F_OK) == 0 ? "YES" : "NO") << std::endl;
-    	std::cerr << "DEBUG: File executable? " << (access(script_path.c_str(), X_OK) == 0 ? "YES" : "NO") << std::endl;
 		
 
 		std::string pathToFind = our_response_.get_path_to_send();
 		std::string tmp = our_response_.getRoot(pathToFind, our_response_.getIdServer(our_response_.getHostName(), our_response_.get_port())) + our_response_.get_path_to_send();
-		std::cerr << UCYAN << "tmp : " << tmp << std::endl;
 		av[0] = const_cast<char *>(script_path.c_str());
 		av[1] = const_cast<char *>(tmp.c_str());
 		av[2] = NULL;
@@ -159,6 +155,7 @@ std::string	CGI::execute()
 		execve(av[0], av, envp_);
 
 		std::cerr << BRED << "execve failed: " << strerror(errno) << RESET << std::endl;
+		our_response_.set_response_code_message(502);
 		exit(1);
 	}
 	else// processus parent
@@ -187,10 +184,6 @@ std::string	CGI::execute()
 		if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
 			throw std::runtime_error("CGI script has failed.");
 		
-		//DEBUG : Afficher l'output en brut
-        std::cout << "=== CGI RAW OUTPUT ===" << std::endl;
-        // std::cout << output << std::endl;
-        std::cout << "======================" << std::endl;
         
 		return (parse_cgi_output(output));
 	}

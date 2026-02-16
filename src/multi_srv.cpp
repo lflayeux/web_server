@@ -15,10 +15,7 @@ std::vector<int>	create_multi_srv(const std::vector<int> &all_ports, const int &
 		for (size_t j = 0; j < i; j++)
 		{
 			if (all_ports[j] == all_ports[i])
-			{
-				std::cout << BGREEN << all_ports[i] << RESET << std::endl;
 				flag = true;
-			}
 		}
 		if (flag)
 		{

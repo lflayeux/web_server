@@ -13,7 +13,6 @@ void Response::response_DELETE()
 {
     std::string root_dir = getRoot(get_path_to_send(), getIdServer(getHostName(), get_port()));
     std::string full_path = root_dir + get_path_to_send();
-    std::cout << BRED "------------------- PATH TO FIND : " << root_dir + get_path_to_send() << std::endl;
 
     if(!file_exist(full_path))
 		set_response_code_message(404);

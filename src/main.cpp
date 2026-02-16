@@ -8,7 +8,7 @@ volatile sig_atomic_t server_running = 1;
 void signal_handler(int signum)
 {
     (void)signum;
-    std::cerr << UYELLOW << "\n[Signal] Interruption reçue. Fermeture propre..." << RESET << std::endl;
+    std::cerr << UMAGENTA << "\n[Signal] Interruption reçue. Fermeture propre..." << RESET << std::endl;
     server_running = 0;
 }
 
@@ -53,7 +53,6 @@ int	main(int ac, char **av)
 	{
 		int nb_events = 0;
 		nb_events = epoll_wait(epoll_fd, srv_events_list, 64, -1);
-		std::cout << BCYAN "NB OF EVENT" << nb_events <<  RESET << std::endl;
 		for (int i = 0; i < nb_events; i++)
 		{
 			std::vector<int>::const_iterator fd_srv = std::find(server_socket_fds.begin(), server_socket_fds.end(), srv_events_list[i].data.fd);
@@ -62,7 +61,7 @@ int	main(int ac, char **av)
 			{
 				socklen_t client_len = sizeof(client);
 				int client_fd = accept(*fd_srv, (sockaddr*)&client, &client_len);
-				std::cout << BMAGENTA "New client connected: fd=" << client_fd << RESET << "\n";
+				std::cout << BMAGENTA "New client connected: id[" << client_fd << "]" << RESET << "\n";
 				int flags = fcntl(client_fd, F_GETFL);
 				fcntl(client_fd, F_SETFL, flags | O_NONBLOCK);
 				// Add client_fd to epoll (important!)
