@@ -10,58 +10,46 @@
 
 void handle_multipart(const std::string &request, Request &our_request)
 {
-	(void) our_request;
-	std::string line;
-	std::istringstream iss(request);
+	(void)our_request;
+	std::string 		line;
 	std::string			boundary;
-	bool				flag = false;
+	std::string			body;
 
-	while (std::getline(iss, line))
+	std::string content_line = "Content-Type: multipart/form-data; boundary=";
+	size_t start_boundaries = request.find(content_line);
+	if (start_boundaries != std::string::npos)
 	{
-		if (!line.empty() && line[line.size() - 1] == '\r')
-			line.erase(line.size() - 1);
-		if (line.find("Content-Type: multipart") != std::string::npos && flag == false)
-		{
-			size_t boundary_pos = line.find("boundary=");
-            if (boundary_pos != std::string::npos)
-			{
-				boundary = line.substr(boundary_pos + 9);
-				std::getline(iss, line);
-				flag = true;
-			}
-		}
-		else if (line.find(boundary) != std::string::npos && flag == true)
-		{
-			std::getline(iss, line);
-			if (!line.empty() && line[line.size() - 1] == '\r')
-				line.erase(line.size() - 1);
-			std::string value;
-			value = line.substr(line.find("filename=") + 10);
-			value.erase(value.size() - 1);
-			our_request.add_header("filename", value);
-			std::cerr << BYELLOW << "Filename to upload > " << value << " <\n" << RESET;
-			break;
-		}
+		start_boundaries += content_line.length();
+		size_t end_boundaries = request.find("\r\n", start_boundaries);
+		boundary = request.substr(start_boundaries, end_boundaries - start_boundaries);
 	}
-	// on cherche le body
-	std::string body_str;
-	while (line != "\r")
-		(std::getline(iss, line));
-	while ((std::getline(iss, line)))
+	std::cerr << BRED << boundary << RESET << std::endl;
+	boundary = "--" + boundary;
+	std::cerr << BRED << boundary << RESET << std::endl;
+	size_t start_body = request.find(boundary);
+	start_body = request.find("\r\n\r\n", start_body);
+	if (start_body != std::string::npos)
 	{
-		if (line.find(boundary) != std::string::npos)
-		{
-			break;
-		}
-		else
-		{
-			if (line[line.size() - 1] == '\r')
-				line.erase(line.size() - 1);
-			body_str += line + '\n';	
-		}
+		boundary = boundary + "--";
+		start_body += 4;
+		size_t end_body = request.find(boundary, start_body);
+		body = request.substr(start_body, end_body - start_body);
+
 	}
-	our_request.add_body(body_str);
-	std::cout << BBLUE << "Body content: [" << body_str << "]\n" << RESET;
+
+	our_request.add_body(body);
+	std::cout << BBLUE << "Body content: [" << body << "]\n" << RESET;
+	
+	std::string filename_value;
+	size_t start_filename = request.find("filename=\"");
+	if (start_filename != std::string::npos)
+	{
+		start_filename += 10;
+		size_t end_filename = request.find("\"\r\n", start_filename);
+		filename_value = request.substr(start_filename, end_filename - start_filename);
+		std::cout << BRED << filename_value << RESET << std::endl;
+	}
+	our_request.add_header("filename", filename_value);
 }
 
 int parse_request(const std::string &request, Request &our_request)

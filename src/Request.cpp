@@ -109,7 +109,7 @@ void Request::setHostname(std::string hostname)
 
 void	Request::add_header(const std::string &header, const std::string &value)
 {
-    this->headers_.insert(std::make_pair(header, value));
+    this->headers_[header]=  value;
 }
 
 void    Request::add_body(const std::string &body)

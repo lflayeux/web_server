@@ -23,8 +23,9 @@ void Response::response_POST()
 		if (upload_location[upload_location.size() - 1] != '/')
 			upload_location += "/";
 		file_location = upload_location + get_headers()["filename"];
+		std::cerr << BRED << "FILE_NAME LOCATION: " << file_location << RESET << std::endl;
         std::ofstream index_fd(file_location.c_str());
-        index_fd << get_body() + "\n";
+        index_fd << get_body();
     }
 }
 

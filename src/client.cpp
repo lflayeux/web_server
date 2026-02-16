@@ -10,8 +10,7 @@ void	client_send_request(const epoll_event *srv_events_list, const int &i, std::
 	std::string	full_data = "";
 	while ((bytes = recv(srv_events_list[i].data.fd, buffer, sizeof(buffer) - 1, 0)) > 0)
 	{
-		buffer[bytes] = '\0';
-		full_data.append(buffer);
+		full_data.append(buffer, bytes);
 	}
 	// Si le client ferme la connexion ou envoie rien
 	if (bytes == 0 || (bytes < 0 && full_data.empty()))
@@ -22,7 +21,8 @@ void	client_send_request(const epoll_event *srv_events_list, const int &i, std::
 		pending_requests.erase(srv_events_list[i].data.fd);
 		return;
 	}
-	if (full_data.find("\r\n\r\n") != std::string::npos)
+	// if (full_data.find("\r\n\r\n") != std::string::npos)
+	else
 	{
 		std::cout << BMAGENTA << "Request recieved :\n" << BYELLOW << full_data << RESET << std::endl;
 		pending_requests[srv_events_list[i].data.fd] = full_data;
