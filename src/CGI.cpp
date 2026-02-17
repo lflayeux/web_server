@@ -135,11 +135,8 @@ bool	CGI::check_script_path() const
 	std::string	script_path = get_script_path();
 	for (size_t i = 0; i < cgi_extensions.size(); ++i)
 	{
-		std::cout << BBLUE "EXTENSION:\n-" << extension << RESET << std::endl;
 		if (extension == cgi_extensions[i])
 		{
-			std::cout << BBLUE "SCRIPT PATH:\n-" << cgi_extensions[i] << RESET << std::endl;
-			std::cout << BBLUE "SCRIPT PATH:\n-" << script_path << RESET << std::endl;
 			if(cgi_extensions[i] == ".py")
 			{
 				if(script_path == "/usr/bin/python3")

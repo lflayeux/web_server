@@ -5,35 +5,6 @@
 
 void	client_send_request(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_requests, const int &epoll_fd)
 {
-	// char		buffer[4096];
-	// ssize_t		bytes = 0;
-	// std::string	full_data = "";
-	// while ((bytes = recv(srv_events_list[i].data.fd, buffer, sizeof(buffer) - 1, 0)) > 0)
-	// {
-	// 	full_data.append(buffer, bytes);
-	// }
-	// // Si le client ferme la connexion ou envoie rien
-	// if (bytes == 0 || (bytes < 0 && full_data.empty()))
-	// {
-	// 	std::cout << BMAGENTA "Client disconnected (empty/closed)" << RESET << std::endl;
-	// 	pending_requests.erase(srv_events_list[i].data.fd);
-	// 	epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
-	// 	close(srv_events_list[i].data.fd);
-	// 	return;
-	// }
-	// // if (full_data.find("\r\n\r\n") != std::string::npos)
-	// else
-	// {
-	// 	std::cout << BMAGENTA << "Request recieved :\n" << BYELLOW << full_data << RESET << std::endl;
-	// 	pending_requests[srv_events_list[i].data.fd] = full_data;
-	// 	// maintenant qu'on a la requete, on veut écrire la réponse
-	// 	// on passe donc en mode EPOLLOUT | EPOLLET
-	// 	epoll_event	ev;
-	// 	ev.events = EPOLLOUT | EPOLLET;
-	// 	ev.data.fd = srv_events_list[i].data.fd;
-	// 	epoll_ctl(epoll_fd, EPOLL_CTL_MOD, srv_events_list[i].data.fd, &ev);
-	// }
-
 	char    buffer[8192]; 
     int     fd = srv_events_list[i].data.fd;
     ssize_t bytes;

@@ -23,9 +23,7 @@ void handle_multipart(const std::string &request, Request &our_request)
 		size_t end_boundaries = request.find("\r\n", start_boundaries);
 		boundary = request.substr(start_boundaries, end_boundaries - start_boundaries);
 	}
-	std::cerr << BRED << boundary << RESET << std::endl;
 	boundary = "--" + boundary;
-	std::cerr << BRED << boundary << RESET << std::endl;
 	size_t start_body = request.find(boundary);
 	start_body = request.find("\r\n\r\n", start_body);
 	if (start_body != std::string::npos)
@@ -38,7 +36,6 @@ void handle_multipart(const std::string &request, Request &our_request)
 	}
 
 	our_request.add_body(body);
-	std::cout << BBLUE << "Body content: [" << body << "]\n" << RESET;
 	
 	std::string filename_value;
 	size_t start_filename = request.find("filename=\"");
@@ -47,7 +44,6 @@ void handle_multipart(const std::string &request, Request &our_request)
 		start_filename += 10;
 		size_t end_filename = request.find("\"\r\n", start_filename);
 		filename_value = request.substr(start_filename, end_filename - start_filename);
-		std::cout << BRED << filename_value << RESET << std::endl;
 	}
 	our_request.add_header("filename", filename_value);
 }
