@@ -888,6 +888,7 @@ bool Config::parseMain(std::vector<std::string> tokens, size_t i)
 void	Config::setCgiExtensions()
 {
 	cgi_extensions_.push_back(".py");
+	cgi_extensions_.push_back(".php");
 }
 
 int Config::load(char *file_path)

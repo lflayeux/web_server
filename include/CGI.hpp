@@ -35,6 +35,7 @@ class	CGI : public Response
 		bool		is_running() const;
 		int			get_pipe_out_fd() const { return pipeOut[0]; }
 		int			get_client_fd() const { return clientFd_; }
+		bool		check_script_path() const;
 };
 
 #endif

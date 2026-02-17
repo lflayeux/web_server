@@ -105,7 +105,8 @@ void	client_get_response(const epoll_event *srv_events_list, const int &i, std::
 			std::cerr << e.what() << '\n';
 			delete my_cgi;
 			our_request.set_response_code_message(502);
-			reponse = our_request.create_response();
+			our_request.path_to_error();
+			reponse = our_request.format_response();
 		}
 	}
 	else

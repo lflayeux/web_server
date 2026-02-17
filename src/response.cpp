@@ -36,9 +36,13 @@ std::string Response::create_header(int content_length)
 			header += "Location: default_pages/uploads.html\r\n";
 	}
 	header += "Content-Type: text/html\r\n";
+	if(!get_headers()["Cookie"].empty())
+		header += "Cookie: "+ get_headers()["Cookie"] + "\r\n";
 	ss << content_length;
 	std::string content_len = ss.str();
 	header = header + "Content-Length: " + content_len;
+
+
 	header += "\r\n\r\n";
 
 
@@ -52,7 +56,6 @@ std::string Response::format_response()
     std::string body = "";
 	std::ifstream index_fd(get_path_to_send().c_str());
     std::string line;
-
 	while(std::getline(index_fd, line))
 		body += line + "\r\n";
 
@@ -74,8 +77,8 @@ std::string Response::create_response()
 {
 	std::string response;
 	int conf_error_code = getConfErrorCode(get_path_to_send(), getIdServer(getHostName(),get_port()));
-
 	long	MBS = getMaxBodySize(get_path_to_send(), getIdServer(getHostName(),get_port()));
+
 	if(MBS < static_cast<long>(get_body().length()))
 		set_response_code_message(413);
 	else if (conf_error_code != 200 && (get_path_to_send().find('.') == get_path_to_send().npos || get_method() == "DELETE"))

@@ -123,12 +123,53 @@ std::string	CGI::parse_cgi_output(const std::string &output)
 
 }
 
+bool	CGI::check_script_path() const
+{
+	std::string	path = our_response_.get_path_to_send();
+	size_t	dot_pos = path.find_last_of('.');
+	if (dot_pos == std::string::npos)
+		return (false);
+	std::string	extension = path.substr(dot_pos);// exemple : .php ou .py
+		
+	std::vector<std::string> cgi_extensions = our_response_.get_cgi_extensions();
+	std::string	script_path = get_script_path();
+	for (size_t i = 0; i < cgi_extensions.size(); ++i)
+	{
+		std::cout << BBLUE "EXTENSION:\n-" << extension << RESET << std::endl;
+		if (extension == cgi_extensions[i])
+		{
+			std::cout << BBLUE "SCRIPT PATH:\n-" << cgi_extensions[i] << RESET << std::endl;
+			std::cout << BBLUE "SCRIPT PATH:\n-" << script_path << RESET << std::endl;
+			if(cgi_extensions[i] == ".py")
+			{
+				if(script_path == "/usr/bin/python3")
+					return true;
+				else
+					return false;
+			}
+			else
+			{
+				if(script_path == "/usr/bin/php")
+					return true;
+				else
+					return false;
+			}
+		}
+	}
+	return (false);
+}
+ 
+
 std::string	CGI::execute(int epoll_fd)
 {
+	if(!check_script_path())
+		throw std::runtime_error("Can't execute this file with this script file");
+		
 	build_environnement();
 	convert_map_to_envp();
 
 	std::cout << UGREEN << "CGI -> execute() starts\n" << RESET;	
+
 	/* On vient FORK()*/
 	pid_ = fork();
 
@@ -156,7 +197,6 @@ std::string	CGI::execute(int epoll_fd)
 		execve(av[0], av, envp_);
 
 		std::cerr << BRED << "execve failed: " << strerror(errno) << RESET << std::endl;
-		our_response_.set_response_code_message(502);
 		exit(1);
 	}
 	else if (pid_ > 0)// processus parent
@@ -184,9 +224,11 @@ std::string	CGI::execute(int epoll_fd)
 	}
 	else
 		throw (std::runtime_error("Fork failed"));
-
+		
 	return ("");
 }
+
+
 
 bool	CGI::read_output(std::string &out_response)
 {
