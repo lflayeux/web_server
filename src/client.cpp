@@ -35,7 +35,7 @@ void	client_send_request(const epoll_event *srv_events_list, const int &i, std::
 	}
 }
 
-void	client_get_response(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_requests, const int &epoll_fd, Response &our_request)
+void	client_get_response(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_requests, std::map<int, CGI *> &cgi_by_fd, const int &epoll_fd, Response &our_request)
 {
 	/* On a une string en arg, on veut la parser et la traiter */
 	if (parse_request(pending_requests[srv_events_list[i].data.fd], our_request) != 0)
@@ -47,14 +47,21 @@ void	client_get_response(const epoll_event *srv_events_list, const int &i, std::
 	if (our_request.is_cgi_request() && !access(tmp.c_str(), F_OK | R_OK))
 	{
 		std::cout << BMAGENTA << "Dealing with CGI\n" << RESET;
-		CGI	my_cgi(our_request);
+		CGI	*my_cgi = new CGI(our_request, srv_events_list[i].data.fd);
 		try
 		{
-			reponse = my_cgi.execute();
+			my_cgi->execute(epoll_fd);
+			cgi_by_fd[my_cgi->get_pipe_out_fd()] = my_cgi;
+			epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
+			pending_requests.erase(srv_events_list[i].data.fd);
+			return;
 		}
 		catch(const std::exception& e)
 		{
 			std::cerr << e.what() << '\n';
+			delete my_cgi;
+			our_request.set_response_code_message(502);
+			reponse = our_request.create_response();
 		}
 		
 	}

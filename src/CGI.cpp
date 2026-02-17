@@ -1,6 +1,11 @@
 # include "../include/CGI.hpp"
 
 
+bool	CGI::is_running() const
+{
+	return (this->running);
+}
+
 static std::string	get_a_string(int value)
 {
     std::ostringstream	oss;
@@ -74,6 +79,11 @@ CGI::~CGI()
             delete[] envp_[i];
         delete[] envp_;
     }
+	if (running)
+	{
+		kill(pid_, SIGKILL);
+		waitpid(pid_, NULL, 0);
+	}
 }
 
 std::string	CGI::get_script_path() const
@@ -113,36 +123,27 @@ std::string	CGI::parse_cgi_output(const std::string &output)
 
 }
 
-std::string	CGI::execute()
+std::string	CGI::execute(int epoll_fd)
 {
 	build_environnement();
 	convert_map_to_envp();
 
-	std::cout << UGREEN << "CGI -> execute() starts\n" << RESET;
-	/* On crée des pipes pour stdin et stdout */
-	int	pipe_in[2];// pour envoyer le body
-	int	pipe_out[2];// pour recevoir la réponse
-
-	if (pipe(pipe_in) < 0 || pipe(pipe_out) < 0)
-		throw std::runtime_error("function pipe() failed");
-	
+	std::cout << UGREEN << "CGI -> execute() starts\n" << RESET;	
 	/* On vient FORK()*/
-	pid_t	pid = fork();
+	pid_ = fork();
 
-	if (pid < 0)
+	if (pid_ < 0)
 		throw std::runtime_error("function fork() failed");
 	
-	if (pid == 0)// on se situe dans le processus enfant
+	if (pid_ == 0)// on se situe dans le processus enfant
 	{
-		close(pipe_in[1]);
-		dup2(pipe_in[0], STDIN_FILENO);
-		close(pipe_in[0]);
+		close(pipeIn[1]);
+		close(pipeOut[0]);
 
-		close(pipe_out[0]);
-		dup2(pipe_out[1], STDOUT_FILENO);
-		close(pipe_out[1]);
+		dup2(pipeIn[0], STDIN_FILENO);
+		dup2(pipeOut[1], STDOUT_FILENO);
 
-		char *av[2];
+		char *av[3];
 		std::string	script_path = get_script_path();
 		
 
@@ -158,34 +159,63 @@ std::string	CGI::execute()
 		our_response_.set_response_code_message(502);
 		exit(1);
 	}
-	else// processus parent
+	else if (pid_ > 0)// processus parent
 	{
-		close(pipe_in[0]);
-		close(pipe_out[1]);
+		close(pipeIn[0]);
+		close(pipeOut[1]);
+		running = true;
+
+		int flags = fcntl(pipeOut[0], F_GETFL);
+		fcntl(pipeOut[0], F_SETFL, flags | O_NONBLOCK);
 
 		if (our_response_.get_method() == "POST")// on veut envoyer le body dans stdin du CGI si jamais la method = POST
 		{
 			std::string body = our_response_.get_body();
-			write(pipe_in[1], body.c_str(), body.size());
+			write(pipeIn[1], body.c_str(), body.size());
 		}
-		close(pipe_in[1]);
+		close(pipeIn[1]);
 
-		std::string	output;
-		char buffer[4096];
-		ssize_t	bytes;
-
-		while ((bytes = read(pipe_out[0], buffer, sizeof(buffer))) > 0)
-			output.append(buffer, bytes);
-		close(pipe_out[0]);
-
-		int	status;
-		waitpid(pid, &status, 0);
-
-		if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
-			throw std::runtime_error("CGI script has failed.");
-		
-        
-		return (parse_cgi_output(output));
+		struct epoll_event ev;
+		ev.events = EPOLLIN | EPOLLET;
+		ev.data.fd = pipeOut[0];
+		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, pipeOut[0], &ev) < 0)
+			throw std::runtime_error("Failed to add CGI pipe to epoll");
+		return ("");
 	}
+	else
+		throw (std::runtime_error("Fork failed"));
+
 	return ("");
+}
+
+bool	CGI::read_output(std::string &out_response)
+{
+	out_response.clear();
+	char buffer[4096];
+	ssize_t bytes_read = 0;
+	
+	bytes_read = read(pipeOut[0], buffer, sizeof(buffer));
+	if (bytes_read > 0)
+	{
+		output_buffer_.append(buffer, bytes_read);
+		return (false);
+	}
+	else if (bytes_read == 0)
+	{
+		running = false;
+		close(pipeOut[0]);
+		waitpid(pid_, NULL, 0);
+		if (output_buffer_.empty())
+		{
+			our_response_.set_response_code_message(502);
+			out_response = our_response_.create_response();
+		}
+		else
+			out_response = parse_cgi_output(output_buffer_);
+		return (true);
+	}
+	else
+	{
+		return (false);
+	}
 }

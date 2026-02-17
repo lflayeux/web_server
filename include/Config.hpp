@@ -101,10 +101,11 @@ class Config
 
 class Request;
 class Response;
+class CGI;
 
 int 				parse_request(const std::string &request, Request &our_request);
 std::vector<int>	create_multi_srv(const std::vector<int> &all_ports, const int &epoll_fd);
 void				client_send_request(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_request, const int &epoll_fd);
-void				client_get_response(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_requests, const int &epoll_fd, Response &our_request);
+void				client_get_response(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_requests, std::map<int, CGI *> &cgi_by_fd, const int &epoll_fd, Response &our_request);
 
 #endif

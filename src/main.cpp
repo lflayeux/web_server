@@ -31,6 +31,7 @@ int	main(int ac, char **av)
 		return (1);
 
 	std::map<int, std::string>	pending_requests;
+	std::map<int, CGI *>		cgi_by_fd;
 	sockaddr_in client;// Port, type d'ad IP + ad IP
 	
 	std::vector<int>	all_ports = our_request.getPorts();
@@ -55,6 +56,19 @@ int	main(int ac, char **av)
 		nb_events = epoll_wait(epoll_fd, srv_events_list, 64, -1);
 		for (int i = 0; i < nb_events; i++)
 		{
+			std::map<int, CGI *>::iterator cgi_it = cgi_by_fd.find(srv_events_list[i].data.fd);
+			if (cgi_it != cgi_by_fd.end())
+			{
+				std::string cgi_response;
+				if (cgi_it->second->read_output(cgi_response))
+				{
+					send(cgi_it->second->get_client_fd(), cgi_response.c_str(), cgi_response.size(), 0);
+					close(cgi_it->second->get_client_fd());
+					delete cgi_it->second;
+					cgi_by_fd.erase(cgi_it);
+				}
+				continue;
+			}
 			std::vector<int>::const_iterator fd_srv = std::find(server_socket_fds.begin(), server_socket_fds.end(), srv_events_list[i].data.fd);
 			// If the event is on the server socket
 			if (fd_srv != server_socket_fds.end())
@@ -78,7 +92,7 @@ int	main(int ac, char **av)
 					client_send_request(srv_events_list, i, pending_requests, epoll_fd);
 				// ETAPE 2 = on peut maintenant envoyer la reponse
 				else if (srv_events_list[i].events & EPOLLOUT)
-					client_get_response(srv_events_list, i, pending_requests, epoll_fd, our_request);
+					client_get_response(srv_events_list, i, pending_requests, cgi_by_fd, epoll_fd, our_request);
 				else if (srv_events_list[i].events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
 					std::cerr << "\n\nQUIT ERROR\n\n";
 			}
