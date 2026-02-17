@@ -63,7 +63,6 @@ void	client_get_response(const epoll_event *srv_events_list, const int &i, std::
 			our_request.set_response_code_message(502);
 			reponse = our_request.create_response();
 		}
-		
 	}
 	else
 	{

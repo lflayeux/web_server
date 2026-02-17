@@ -98,5 +98,12 @@ int	main(int ac, char **av)
 			}
 		}
 	}
+	for (size_t i = 0; i < server_socket_fds.size(); i++)
+	{
+		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, server_socket_fds[i], NULL);
+		close(server_socket_fds[i]);
+	}
+	close(epoll_fd);
+	return (1);
 }
 /* a faire : Parser la requete, faire différentes pages en html, */
