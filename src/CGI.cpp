@@ -160,7 +160,13 @@ bool	CGI::check_script_path() const
 std::string	CGI::execute(int epoll_fd)
 {
 	if(!check_script_path())
+	{
+		close(pipeIn[0]);
+		close(pipeIn[1]);
+		close(pipeOut[0]);
+		close(pipeOut[1]);		
 		throw std::runtime_error("Can't execute this file with this script file");
+	}
 		
 	build_environnement();
 	convert_map_to_envp();

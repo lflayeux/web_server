@@ -74,6 +74,7 @@ void	client_get_response(const epoll_event *srv_events_list, const int &i, std::
 		catch(const std::exception& e)
 		{
 			std::cerr << e.what() << '\n';
+			close(my_cgi->get_pipe_out_fd());
 			delete my_cgi;
 			our_request.set_response_code_message(502);
 			our_request.path_to_error();

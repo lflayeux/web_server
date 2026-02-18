@@ -32,7 +32,7 @@ bool Response::create_autoindex_page(const std::string &path_to_index)
         file_list.push_back(std::make_pair(file_name, file_type));
         file = readdir(dir);
     }
-
+    closedir(dir);
     autoindex_ = create_page(file_list);
     return true;
 }   
