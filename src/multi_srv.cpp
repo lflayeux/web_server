@@ -30,9 +30,10 @@ std::vector<int>	create_multi_srv(const std::vector<int> &all_ports, const int &
 		}
 		int opt = 1;
 		setsockopt(server_socket_fds.back(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-		// Non blocking server
+		// Non blocking server + close on exec
 		int flags = fcntl(server_socket_fds.back(), F_GETFL);
 		fcntl(server_socket_fds.back(), F_SETFL, flags | O_NONBLOCK);
+		fcntl(server_socket_fds.back(), F_SETFD, FD_CLOEXEC);
 		// memset(&srv, 0, sizeof(srv));
 		srv.sin_family = AF_INET;
 		srv.sin_addr.s_addr = INADDR_ANY;

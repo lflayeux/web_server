@@ -78,6 +78,7 @@ int	main(int ac, char **av)
 				std::cout << BMAGENTA "New client connected: id[" << client_fd << "]" << RESET << "\n";
 				int flags = fcntl(client_fd, F_GETFL);
 				fcntl(client_fd, F_SETFL, flags | O_NONBLOCK);
+				fcntl(client_fd, F_SETFD, FD_CLOEXEC);
 				// Add client_fd to epoll (important!)
 				epoll_event ev;
 				ev.events = EPOLLIN | EPOLLET;      // listen for read events

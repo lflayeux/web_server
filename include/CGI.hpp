@@ -23,6 +23,9 @@ class	CGI : public Response
 		{
 			if ((pipe(pipeIn) == -1) || (pipe(pipeOut) == -1))
 				throw (std::runtime_error("Failed to create pipes"));
+			// Set CLOEXEC on pipe ends that the CGI child should not inherit
+			fcntl(pipeIn[1], F_SETFD, FD_CLOEXEC);
+			fcntl(pipeOut[0], F_SETFD, FD_CLOEXEC);
 		};
 		~CGI();
 		void		build_environnement();

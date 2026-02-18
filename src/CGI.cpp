@@ -175,11 +175,11 @@ std::string	CGI::execute(int epoll_fd)
 	
 	if (pid_ == 0)// on se situe dans le processus enfant
 	{
-		close(pipeIn[1]);
-		close(pipeOut[0]);
-
+		// Les FD avec CLOEXEC (epoll, sockets, autres pipes) seront fermés automatiquement par execve
 		dup2(pipeIn[0], STDIN_FILENO);
 		dup2(pipeOut[1], STDOUT_FILENO);
+		close(pipeIn[0]);
+		close(pipeOut[1]);
 
 		char *av[3];
 		std::string	script_path = get_script_path();

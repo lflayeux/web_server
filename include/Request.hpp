@@ -33,7 +33,7 @@ enum	method
 class Request : public Config
 {
 	public:
-		Request(){};
+		Request() : content_length_(0){};
 		~Request(){};
 		int			get_id_server() const;
 		std::string	get_method() const;
