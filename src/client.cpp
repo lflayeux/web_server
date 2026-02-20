@@ -50,11 +50,14 @@ void	client_send_request(const epoll_event *srv_events_list, const int &i, std::
     epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev);
 }
 
-void	client_get_response(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_requests, std::map<int, CGI *> &cgi_by_fd, const int &epoll_fd, Response &our_request)
+int	client_get_response(const epoll_event *srv_events_list, const int &i, std::map<int, std::string> &pending_requests, std::map<int, CGI *> &cgi_by_fd, const int &epoll_fd, Response &our_request)
 {
 	/* On a une string en arg, on veut la parser et la traiter */
 	if (parse_request(pending_requests[srv_events_list[i].data.fd], our_request) != 0)
+	{
 		std::cerr << "Error with handling request\n";// + envoyer code erreur
+		return (-1);
+	}
 	std::cout << BMAGENTA "Sending response..." << RESET << std::endl;
 	std::string	reponse;
 	std::string pathToFind = our_request.get_path_to_send();
@@ -69,7 +72,7 @@ void	client_get_response(const epoll_event *srv_events_list, const int &i, std::
 			cgi_by_fd[my_cgi->get_pipe_out_fd()] = my_cgi;
 			epoll_ctl(epoll_fd, EPOLL_CTL_DEL, srv_events_list[i].data.fd, NULL);
 			pending_requests.erase(srv_events_list[i].data.fd);
-			return;
+			return (0);
 		}
 		catch(const std::exception& e)
 		{
@@ -94,4 +97,5 @@ void	client_get_response(const epoll_event *srv_events_list, const int &i, std::
 	close(srv_events_list[i].data.fd);
 	std::cout << BMAGENTA "Disconnected client: id[" << srv_events_list[i].data.fd << "]" << RESET << std::endl;
 	pending_requests.erase(srv_events_list[i].data.fd);
+	return (0);
 }

@@ -52,17 +52,17 @@ int parse_request(const std::string &request, Request &our_request)
 {
 	std::string line;
 	std::istringstream iss(request);
-
+	
 	/* 1. Parsing of the request line (METHOD) */
 	if (std::getline(iss, line))
 	{
 		// we erase the char '\r' if it does exist in our first line
 		if (!line.empty() && line[line.size() - 1] == '\r')
-			line.erase(line.size() - 1);
+		line.erase(line.size() - 1);
 		
 		std::istringstream	line_stream(line);
 		std::string			method, path, version;
-
+		
 		line_stream >> method >> path >> version;
 		our_request.set_method(method);
 		our_request.set_path(path);
@@ -95,13 +95,22 @@ int parse_request(const std::string &request, Request &our_request)
             if (header_name == "Host")
             {
                 // "localhost:8080" -> extraire le port
-                size_t port_pos = header_value.find(':');
+            	size_t port_pos = header_value.find(':');
                 if (port_pos != std::string::npos)
                 {
+					std::string	tmp = header_value.substr(0, port_pos);
+					if (our_request.checkHostname(tmp) == false)
+						return (-1);
 					our_request.setHostname(header_value.substr(0, port_pos));
                     std::string port_str = header_value.substr(port_pos + 1);
 					our_request.set_port(static_cast<int>(std::strtol(port_str.c_str(), NULL, 10)));
+					std::cout << "<<< " << header_value << std::endl;
                 }
+				else
+				{
+					std::cout << ">>> " << header_value << std::endl;
+					return (-1);
+				}
             }
             if (header_name == "Content-Length")
 				our_request.set_content_length(header_value);

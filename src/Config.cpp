@@ -50,6 +50,23 @@ bool	Config::checkPort()
 			}
 		}
 	}
+	for (size_t i = server_.size(); i > 0; i--)
+	{
+		for (size_t j = 0; j < i; j++)
+		{
+			if (server_[i].server_name == server_[j].server_name)
+			{
+				for (size_t k = 0; k < server_[i].port.size(); k++)
+				{
+					for (size_t l = 0; l < server_[j].port.size(); l++)
+					{
+						if (server_[i].port[k] == server_[j].port[l])
+							return (false);
+					}
+				}
+			}
+		}
+	}
 	return (true);
 }
 
@@ -90,8 +107,20 @@ bool	Config::checkConfig()
 	return (true);
 }
 
-
-
+bool Config::checkHostname(const std::string &toCheck)
+{
+	if (toCheck == "127.0.0.1" || toCheck == "localhost")
+		return (true);
+	std::cout << "toCheck: " << toCheck << std::endl;
+	for (size_t i = 0; i < server_.size(); i++)
+	{
+		std::cout << "servername_: " << server_[i].server_name << std::endl;
+		if (server_[i].server_name == toCheck)
+			return (true);
+	}
+	std::cout << "return false\n";
+	return (false);
+}
 // ======================================
 // ============= GETTER/SETTER ==========
 // ======================================
@@ -103,7 +132,7 @@ int Config::getIdServer(std::string hostname, int port) const
 	{
 		for (size_t j = 0; j < server_[i].port.size(); j++)
 		{
-			if ((hostname == server_[i].server_name || hostname == "localhost") && port == server_[i].port[j])
+			if ((hostname == server_[i].server_name || hostname == "localhost" || hostname == "127.0.0.1") && port == server_[i].port[j])
 				return (i);
 		}
 	}

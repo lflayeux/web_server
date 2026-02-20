@@ -93,7 +93,11 @@ int	main(int ac, char **av)
 					client_send_request(srv_events_list, i, pending_requests, epoll_fd);
 				// ETAPE 2 = on peut maintenant envoyer la reponse
 				else if (srv_events_list[i].events & EPOLLOUT)
-					client_get_response(srv_events_list, i, pending_requests, cgi_by_fd, epoll_fd, our_request);
+				{
+					
+					if (client_get_response(srv_events_list, i, pending_requests, cgi_by_fd, epoll_fd, our_request) != 0)
+						break;
+				}
 				else if (srv_events_list[i].events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
 					std::cerr << "\n\nQUIT ERROR\n\n";
 			}
